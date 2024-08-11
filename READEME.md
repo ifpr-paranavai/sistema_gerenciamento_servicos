@@ -42,3 +42,6 @@ django admin. Pode realizar a tarefa com o comando `python manage.py createsuper
 # Banco de Dados
 Criar um banco de dados, utilizando postgres. Será necessário atualizar as variáveis
 de ambiente.
+
+# Gerar imagens dos modelos
+  `python manage.py graph_models --pydot -a -g -o my_project_visu.png `
