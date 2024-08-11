@@ -36,3 +36,7 @@ class User(TimeStampedModel):
             hashed_password = bcrypt.hashpw(password_bytes, salt)
             self.password = hashed_password.decode('utf-8')
         super().save(*args, **kwargs)
+    
+    def has_permission(self, permission_name):
+        return self.features.filter(name=permission_name).exists()
+        
