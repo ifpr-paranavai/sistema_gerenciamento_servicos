@@ -1,18 +1,25 @@
 from django.http import HttpResponseForbidden
-from django.utils.deprecation import MiddlewareMixin
-from core.models import Role
+from django.urls import resolve
+from django.conf import settings
+from authentication.models.user import User
 
-class PermissionRequiredMiddleware(MiddlewareMixin):
-    def process_view(self, request, view_func, view_args, view_kwargs):
-        required_permission = view_kwargs.get('required_permission', None)
+class PermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
 
-        if required_permission:
-            user = request.user
-            if not user.is_authenticated:
-                return HttpResponseForbidden("You must be logged in to access this page.")
+    def __call__(self, request):
+        if not hasattr(request, 'user') or not isinstance(request.user, User):
+            return self.get_response(request)
+
+        current_url = resolve(request.path_info).url_name
+        required_permissions = getattr(settings, 'URL_PERMISSIONS', {}).get(current_url)
+
+        if required_permissions:
+            if isinstance(required_permissions, str):
+                required_permissions = [required_permissions]
             
-            # Verifica se o usuário possui a permissão necessária diretamente ou via sua Role
-            if not user.has_permission(required_permission):
-                return HttpResponseForbidden("You do not have permission to access this page.")
+            for permission in required_permissions:
+                if not request.user.has_permission(permission):
+                    return HttpResponseForbidden(f"Permission '{permission}' required to access this page.")
 
-        return None
+        return self.get_response(request)
