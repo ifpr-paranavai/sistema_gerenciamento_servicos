@@ -1,6 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.backends import BaseBackend
-from core.models import User, Feature
+from authentication.models.user import User
+from core.models import Feature
 
 class PermissionService:
     @staticmethod

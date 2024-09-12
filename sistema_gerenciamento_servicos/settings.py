@@ -189,5 +189,5 @@ GRAPH_MODELS = {
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    'authentication.permissions.permissions_service.AuthBackend',
+    'authentication.permissions.permission_service.AuthBackend',
 ]
