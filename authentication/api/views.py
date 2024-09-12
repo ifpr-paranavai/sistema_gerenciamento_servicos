@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny
 from authentication.models import User
 
     
-class AutenticacaoView(ViewSet):
+class AuthenticationView(ViewSet):
     authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
@@ -24,8 +24,8 @@ class AutenticacaoView(ViewSet):
         content = {'message': f'Item with id {pk}'}
         return Response(content, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'], url_path='registro')
-    def registro(self, request, *args, **kwargs):
+    @action(detail=False, methods=['post'], url_path='register')
+    def register(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

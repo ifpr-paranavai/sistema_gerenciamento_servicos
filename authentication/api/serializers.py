@@ -3,7 +3,7 @@ from authentication.models import User
 from core.models.role import Role
         
 class UserSerializer(serializers.ModelSerializer):
-    roles = serializers.SlugRelatedField(
+    role = serializers.SlugRelatedField(
         queryset=Role.objects.all(),
         slug_field='id',
         many=True
@@ -11,13 +11,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'nome', 'senha', 'cpf', 'roles']
+        fields = ['id', 'email', 'name', 'password', 'cpf', 'role',]
         extra_kwargs = {
             'senha': {'write_only': True},
         }
 
     def create(self, validated_data):
-        roles_data = validated_data.pop('roles')
+        roles_data = validated_data.pop('role')
         usuario = User.objects.create(**validated_data)
-        usuario.roles.set(roles_data)
+        usuario.role.set(roles_data)
         return usuario

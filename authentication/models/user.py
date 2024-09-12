@@ -17,6 +17,7 @@ class User(TimeStampedModel):
     profile = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True, blank=True)
     role = models.ForeignKey(Role, on_delete=models.SET_NULL, null=True, blank=True)
     features = models.ManyToManyField(Feature, related_name='system_users')
+    is_staff = models.BooleanField(default=False)
 
     def __str__(self):
         return self.email
