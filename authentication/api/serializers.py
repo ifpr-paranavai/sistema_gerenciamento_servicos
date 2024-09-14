@@ -5,8 +5,7 @@ from core.models.role import Role
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(
         queryset=Role.objects.all(),
-        slug_field='id',
-        many=True
+        slug_field='id'
     )
 
     class Meta:
@@ -19,5 +18,5 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         roles_data = validated_data.pop('role')
         usuario = User.objects.create(**validated_data)
-        usuario.role.set(roles_data)
+        usuario.role = roles_data
         return usuario
