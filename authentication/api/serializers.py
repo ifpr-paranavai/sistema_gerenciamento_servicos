@@ -19,5 +19,5 @@ class UserSerializer(serializers.ModelSerializer):
         roles_data = validated_data.pop('role')
         usuario = User.objects.create(**validated_data)
         usuario.role = roles_data
-        usuario.features = roles_data.features.all()
+        # usuario.features = roles_data.features.all()
         return usuario
