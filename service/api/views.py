@@ -1,7 +1,7 @@
-from rest_framework import viewsets
+from core.models.mixins import DynamicPermissionModelViewSet
 from service.models import Service
 from service.api.serializers import ServiceSerializer
 
-class ServiceViewSet(viewsets.ModelViewSet):
+class ServiceViewSet(DynamicPermissionModelViewSet):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer

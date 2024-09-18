@@ -4,14 +4,16 @@ from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework import status
 from authentication.api.serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 from authentication.models import User
 
     
-class AutenticacaoView(ViewSet):
+class AuthenticationView(ViewSet):
     authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
@@ -22,8 +24,8 @@ class AutenticacaoView(ViewSet):
         content = {'message': f'Item with id {pk}'}
         return Response(content, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['post'], url_path='registro')
-    def registro(self, request, *args, **kwargs):
+    @action(detail=False, methods=['post'], url_path='register')
+    def register(self, request, *args, **kwargs):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -37,14 +39,14 @@ class AutenticacaoView(ViewSet):
     @action(detail=False, methods=['post'], url_path='login')
     def login(self, request, *args, **kwargs):
         email = request.data.get('email')
-        senha = request.data.get('senha')
+        password = request.data.get('password')
             
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({'error': 'Credenciais inválidas!'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if bcrypt.checkpw(senha.encode('utf-8'), user.senha.encode('utf-8')):
+        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
             refresh = RefreshToken.for_user(user)
             serializer = UserSerializer(user)
             return Response({
@@ -55,3 +57,21 @@ class AutenticacaoView(ViewSet):
         else:
             return Response({'error': 'Credenciais inválidas!'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    pass
+
+class CustomTokenRefreshView(TokenRefreshView):
+    pass
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
