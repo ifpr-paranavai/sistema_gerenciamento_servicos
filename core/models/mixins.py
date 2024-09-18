@@ -28,4 +28,4 @@ class DynamicModelPermissions(permissions.BasePermission):
         return request.user.has_permission(permission_name)
 
 class DynamicPermissionModelViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, DynamicModelPermissions]
+    permission_classes = [ DynamicModelPermissions]

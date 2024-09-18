@@ -55,7 +55,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authentication.api.jwt.JWTAuthentication',
+        'core.models.jwt.JWTAuthentication',
     ),
 }
 
@@ -76,8 +76,6 @@ CORS_ALLOW_HEADERS = [
     'Content-Type',
     'Authorization',
 ]
-
-from datetime import timedelta
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
