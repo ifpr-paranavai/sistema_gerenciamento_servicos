@@ -39,14 +39,14 @@ class AuthenticationView(ViewSet):
     @action(detail=False, methods=['post'], url_path='login')
     def login(self, request, *args, **kwargs):
         email = request.data.get('email')
-        senha = request.data.get('senha')
+        password = request.data.get('password')
             
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             return Response({'error': 'Credenciais inválidas!'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if bcrypt.checkpw(senha.encode('utf-8'), user.senha.encode('utf-8')):
+        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
             refresh = RefreshToken.for_user(user)
             serializer = UserSerializer(user)
             return Response({

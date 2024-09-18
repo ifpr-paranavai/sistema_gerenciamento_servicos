@@ -103,7 +103,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'authentication.permissions.middleware.PermissionMiddleware',
+    # 'authentication.permissions.middleware.PermissionMiddleware',
 ]
 
 ROOT_URLCONF = 'sistema_gerenciamento_servicos.urls'
