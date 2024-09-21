@@ -1,0 +1,191 @@
+{
+	"info": {
+		"_postman_id": "337b3db0-c9da-46d7-9c27-1540fc38c6a5",
+		"name": "SGS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23247589"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": []
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-CSRFToken",
+								"value": "60DV4yFb40bqObePSc2x2jPcUkdqesaaI5dEvJtyVdb74fyunsY08G6uZzGNeuV8"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"1@admin.com\",\n\t\t\"password\": \"admin\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:3000/api/v1/authentication/login/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"authentication",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": []
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"1@admin.com\",\n  \"name\": \"Admin da silva2\",\n  \"password\": \"admin\",\n  \"cpf\": \"12345678910\",\n  \"role\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://127.0.0.1:3000/api/v1/authentication/register/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"authentication",
+								"register",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Appointments",
+			"item": [
+				{
+					"name": "Appointments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": []
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"followRedirects": true,
+						"disableUrlEncoding": false,
+						"disableCookies": false
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI2NjMzNTc3LCJpYXQiOjE3MjY2Mjk5NzcsImp0aSI6ImIxOTJlZGQyNGI0MzQwZjFiMTY2ZWM2MTBlMzJjOWI1IiwidXNlcl9pZCI6IjY4MjgzNmYwLTMyNDgtNDhiMy04NjY2LTM4MmRmYjhlMzMwMCJ9.bGV93Kq95NhLSvIeU_0AwUbIxYkNbbtS3qcyQ9oIWPQ",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "User-Agent",
+								"value": "insomnia/10.0.0"
+							}
+						],
+						"url": {
+							"raw": "http://127.0.0.1:3000/api/v1/appointment/appointments/",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"v1",
+								"appointment",
+								"appointments",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
