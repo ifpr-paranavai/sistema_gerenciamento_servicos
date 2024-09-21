@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from authentication.models import User
+from documents.models.document import Document
 from service.models import Service
 from core.models.mixins import TimeStampedModel
 
@@ -12,4 +13,7 @@ class Appointment(TimeStampedModel):
     provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provider_appointments')
     services = models.ManyToManyField(Service)
     is_completed = models.BooleanField(default=False)
+    document = models.ManyToManyField(Document, related_name='appointments')
 
+    def __str__(self):
+        return f"Appointment {self.id} for {self.client.name} with {self.provider.name}"

@@ -32,6 +32,8 @@ DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Application definition
 
@@ -47,6 +49,7 @@ INSTALLED_APPS = [
     'authentication',
     'appointment',
     'service',
+    'documents',
     'core',
     'corsheaders',
     'drf_yasg',
