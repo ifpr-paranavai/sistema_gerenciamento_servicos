@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django.test import TestCase
+from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIRequestFactory, force_authenticate
 from model_bakery import baker
 from appointment.api.views import AppointmentViewSet, ReviewViewSet
@@ -9,15 +10,14 @@ from service.models.service import Service
 class PermissionTestCase(TestCase):
     def setUp(self):
         self.factory = APIRequestFactory()
-        self.client_user = baker.make(User, email="client@example.com", _fill_optional=True)
-        self.provider_user = baker.make(User, email="provider@example.com", _fill_optional=True)
-        self.service = baker.make(Service, _fill_optional=True)
-        self.user = baker.make(User, email="test@example.com", _fill_optional=True)
+        self.client_user = baker.make(User, email="client@example.com")
+        self.provider_user = baker.make(User, email="provider@example.com")
+        self.service = baker.make(Service)
+        self.user = baker.make(User, email="test@example.com")
         self.role = baker.make('core.Role', name='admin')
-        self.role.features.add(
-            baker.make('core.Feature', name="appointment.view_appointment"),
-            baker.make('core.Feature', name="appointment.add_appointment")
-        )
+        self.feature_view = baker.make('core.Feature', name="appointment.view_appointment")
+        self.feature_add = baker.make('core.Feature', name="appointment.add_appointment")
+        self.role.features.add(self.feature_view, self.feature_add)
         self.user.role = self.role
         self.user.save()
 
@@ -28,7 +28,7 @@ class PermissionTestCase(TestCase):
             'client': self.client_user.id,
             'provider': self.provider_user.id,
             'services': [self.service.id],
-            'is_completed': False
+            'is_completed': False,
         }
         request = self.factory.post('/appointments/', appointment_data, format='json')
         view = AppointmentViewSet.as_view({'post': 'create'})
