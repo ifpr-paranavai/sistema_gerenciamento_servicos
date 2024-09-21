@@ -17,7 +17,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         roles_data = validated_data.pop('role')
-        usuario = User.objects.create(**validated_data)
-        usuario.role = roles_data
-        # usuario.features = roles_data.features.all()
-        return usuario
+        user = User.objects.create(**validated_data)
+        user.role = roles_data
+        # user.features.set(role_data.features.all())
+        return user
