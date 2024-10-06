@@ -15,16 +15,7 @@ class DynamicModelPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         model_name = view.queryset.model._meta.model_name
         app_label = view.queryset.model._meta.app_label
-        action_map = {
-            'list': 'view',
-            'retrieve': 'view',
-            'create': 'add',
-            'update': 'change',
-            'partial_update': 'change',
-            'destroy': 'delete'
-        }
-        action = action_map.get(view.action, view.action)
-        permission_name = f'{app_label}.{action}_{model_name}'
+        permission_name = f'{app_label}.{view.action}_{model_name}'
         return request.user.has_permission(permission_name)
 
 class DynamicPermissionModelViewSet(ModelViewSet):
