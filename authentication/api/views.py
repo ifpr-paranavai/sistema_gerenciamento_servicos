@@ -46,7 +46,7 @@ class AuthenticationView(ViewSet):
         except User.DoesNotExist:
             return Response({'error': 'Credenciais inválidas!'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+        if user.check_password(password):
             refresh = RefreshToken.for_user(user)
             serializer = UserSerializer(user)
             return Response({

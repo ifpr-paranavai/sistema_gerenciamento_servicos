@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import make_password, check_password, is_password_usable
 from core.models.profile import Profile
 from core.models.feature import Feature
 from core.models.role import Role
@@ -21,7 +21,7 @@ class User(TimeStampedModel):
         return self.email
 
     def save(self, *args, **kwargs):
-        if not self.pk:  # Se é um novo usuário (não tem primary key ainda)
+        if not self.password.startswith('pbkdf2_') and not self.password.startswith('$2b$'):
             self.set_password(self.password)
         super().save(*args, **kwargs)
 
