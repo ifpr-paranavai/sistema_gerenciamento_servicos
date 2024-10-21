@@ -4,7 +4,7 @@ from appointment.api.serializers import AppointmentSerializer, ReviewSerializer
 from core.models.mixins import DynamicPermissionModelViewSet
 
 class AppointmentViewSet(DynamicPermissionModelViewSet):
-    queryset = Appointment.objects.all()
+    queryset = Appointment.objects.filter(deleted_at__isnull=True).all()
     serializer_class = AppointmentSerializer
 
 class ReviewViewSet(DynamicPermissionModelViewSet):

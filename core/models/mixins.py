@@ -1,15 +1,22 @@
 from django.db import models
 from rest_framework import permissions
 from rest_framework.viewsets import ModelViewSet
+from django.utils import timezone
+
 
 class TimeStampedModel(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
-
     class Meta:
         abstract = True
-        
+
+    def delete(self):
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def hard_delete(self):
+        super().delete()
 
 class DynamicModelPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
