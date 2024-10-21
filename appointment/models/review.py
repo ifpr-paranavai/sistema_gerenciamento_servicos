@@ -1,4 +1,6 @@
 from django.db import models
+from appointment.models.appointment import Appointment
+from authentication.models.user import User
 from core.models.mixins import TimeStampedModel
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -9,7 +11,8 @@ class Review(TimeStampedModel):
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     comment = models.TextField()
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Review for {self.service.name} by {self.user.username}'
+        return f'Review for {self.appointment.id} by {self.user.name}'
