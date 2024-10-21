@@ -11,16 +11,35 @@ class AppointmentSerializer(serializers.ModelSerializer):
     client = UserSerializer(read_only=True)
     provider = UserSerializer(read_only=True)
     services = ServiceSerializer(many=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointment
-        fields = ['id', 'appointment_date', 'status', 'client', 'provider', 'services', 'is_completed', 'documents', 'document_file']
+        fields = [
+            'id', 
+            'appointment_date', 
+            'status', 
+            'client', 
+            'provider', 
+            'services', 
+            'is_completed', 
+            'documents', 
+            'document_file', 
+            'rating'
+        ]
 
     def create(self, validated_data):
         services = validated_data.pop('services', [])
         appointment = Appointment.objects.create(**validated_data)
         appointment.services.set(services)
         return appointment
+    
+    def get_rating(self, obj):
+        review = obj.reviews.first()
+        if review:
+            return review.rating
+        return None
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:

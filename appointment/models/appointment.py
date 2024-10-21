@@ -11,7 +11,7 @@ class Appointment(TimeStampedModel):
     status = models.CharField(max_length=100)
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_appointments')
     provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provider_appointments')
-    services = models.ManyToManyField(Service)
+    services = models.ManyToManyField(Service, related_name='appointments')
     is_completed = models.BooleanField(default=False)
     documents = models.ManyToManyField(Document, related_name='appointments')
 
