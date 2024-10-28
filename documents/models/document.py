@@ -2,10 +2,9 @@ import os
 from django.db import models
 from django.core.validators import FileExtensionValidator
 from core.models.mixins import TimeStampedModel
-from service.models import Service
 
 def document_upload_path(instance, filename):
-    return f'documents/service_{instance.service.id}/{filename}'
+    return f'documents/{filename}'
 
 class Document(TimeStampedModel):
     DOCUMENT_TYPES = (
