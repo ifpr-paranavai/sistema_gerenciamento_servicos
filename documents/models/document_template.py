@@ -12,7 +12,7 @@ class DocumentTemplate(TimeStampedModel):
 
 class ServiceDocumentRequirement(TimeStampedModel):
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name='document_requirements')
-    document_template = models.ForeignKey(DocumentTemplate, on_delete=models.CASCADE)
+    document_template = models.ForeignKey(DocumentTemplate, on_delete=models.CASCADE, null=True, blank=True)
     is_required = models.BooleanField(default=False)
 
     class Meta:

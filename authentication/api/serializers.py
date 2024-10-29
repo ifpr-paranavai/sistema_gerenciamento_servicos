@@ -23,3 +23,16 @@ class UserSerializer(serializers.ModelSerializer):
         user.role = roles_data
         user.features.set(roles_data.features.all())
         return user
+
+class SimpleUserSerializer(serializers.ModelSerializer):
+    cpf = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'name']
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
+        
+    def get_cpf(self, obj):
+        return obj.cpf[-4:]

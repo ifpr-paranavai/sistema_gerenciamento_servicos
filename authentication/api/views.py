@@ -4,14 +4,29 @@ from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from authentication.api.serializers import UserSerializer
+from authentication.api.serializers import SimpleUserSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 
 from authentication.models import User
+from core.models.mixins import DynamicPermissionModelViewSet
+from core.models.profile import Profile
 
+class UserViewSet(DynamicPermissionModelViewSet):
+    
+    @action(detail=False, methods=['get'], url_path='clients')
+    def list_clients(self, request):
+        users = User.objects.filter(profile__role__name=Profile.ProfileType.CLIENT)
+        serializer = SimpleUserSerializer(users, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'], url_path='providers')
+    def list_providers(self, request):
+        users = User.objects.filter(profile__role__name=Profile.ProfileType.PROVIDER)
+        serializer = SimpleUserSerializer(users, many=True)
+        return Response(serializer.data)
     
 class AuthenticationView(ViewSet):
     authentication_classes = [JWTAuthentication]

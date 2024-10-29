@@ -21,7 +21,7 @@ class Appointment(TimeStampedModel):
     provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provider_appointments')
     services = models.ManyToManyField(Service, related_name='appointments')
     is_completed = models.BooleanField(default=False)
-    documents = models.ManyToManyField(Document, related_name='appointments')
+    documents = models.ManyToManyField(Document, related_name='appointments', blank=True, null=True)
 
     def __str__(self):
         return f"Appointment {self.id} for {self.client.name} with {self.provider.name}"
