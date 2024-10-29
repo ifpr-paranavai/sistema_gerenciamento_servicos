@@ -29,10 +29,10 @@ class SimpleUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'name']
+        fields = ['id', 'email', 'name', 'cpf']
         extra_kwargs = {
             'password': {'write_only': True},
         }
         
     def get_cpf(self, obj):
-        return obj.cpf[-4:]
+        return f'{obj.cpf[:3]}.***.***-{obj.cpf[9:]}'

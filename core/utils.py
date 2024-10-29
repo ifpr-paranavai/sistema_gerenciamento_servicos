@@ -1,6 +1,11 @@
 from django.apps import apps as django_apps
 from django.db import IntegrityError
 
+FIXED_FEATURES = [
+    ('clients_userviewset', 'Listar clientes do sistema'),
+    ('providers_userviewset', 'Listar prestadores do sistema'),
+]
+
 def create_dynamic_features(apps=None):
     if apps is None:
         apps = django_apps
@@ -28,5 +33,16 @@ def create_dynamic_features(apps=None):
                 feature = Feature.objects.get(name=name)
                 feature.description = description
                 feature.save()
+
+    for name, description in FIXED_FEATURES:
+        try:
+            Feature.objects.get_or_create(
+                name=name,
+                defaults={'description': description}
+            )
+        except IntegrityError:
+            feature = Feature.objects.get(name=name)
+            feature.description = description
+            feature.save()
 
     print("Features dinâmicas criadas ou atualizadas com sucesso!")

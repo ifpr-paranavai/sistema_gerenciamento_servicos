@@ -11,23 +11,25 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 
 from authentication.models import User
-from core.models.mixins import DynamicPermissionModelViewSet
+from core.models.mixins import DynamicViewPermissions
 from core.models.profile import Profile
 
-class UserViewSet(DynamicPermissionModelViewSet):
-    
-    @action(detail=False, methods=['get'], url_path='clients')
-    def list_clients(self, request):
-        users = User.objects.filter(profile__role__name=Profile.ProfileType.CLIENT)
-        serializer = SimpleUserSerializer(users, many=True)
+class UserViewSet(ViewSet):
+    permission_classes = [DynamicViewPermissions]
+    serializer_class = SimpleUserSerializer
+
+    @action(detail=False, methods=['get'])
+    def clients(self, request):
+        users = User.objects.filter(profile__profile_type=Profile.ProfileType.CLIENT)
+        serializer = self.serializer_class(users, many=True)
         return Response(serializer.data)
-    
-    @action(detail=False, methods=['get'], url_path='providers')
-    def list_providers(self, request):
-        users = User.objects.filter(profile__role__name=Profile.ProfileType.PROVIDER)
-        serializer = SimpleUserSerializer(users, many=True)
+
+    @action(detail=False, methods=['get'])
+    def providers(self, request):
+        users = User.objects.filter(profile__profile_type=Profile.ProfileType.PROVIDER)
+        serializer = self.serializer_class(users, many=True)
         return Response(serializer.data)
-    
+
 class AuthenticationView(ViewSet):
     authentication_classes = [JWTAuthentication]
 

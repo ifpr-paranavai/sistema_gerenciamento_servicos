@@ -27,3 +27,11 @@ class DynamicModelPermissions(permissions.BasePermission):
 
 class DynamicPermissionModelViewSet(ModelViewSet):
     permission_classes = [ DynamicModelPermissions]
+
+class DynamicViewPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        view_name = view.__class__.__name__.lower()
+        action = view.action if hasattr(view, 'action') else request.method.lower()
+        
+        permission_name = f'{action}_{view_name}'
+        return request.user.has_permission(permission_name)
