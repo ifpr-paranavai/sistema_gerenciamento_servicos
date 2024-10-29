@@ -6,9 +6,17 @@ from service.models import Service
 from core.models.mixins import TimeStampedModel
 
 class Appointment(TimeStampedModel):
+    
+    class Status(models.TextChoices):
+        PENDING = 'Agendado'
+        IN_PROGRESS = 'Em andamento'
+        CANCELED = 'Cancelado'
+        COMPLETED = 'Concluido'
+        
+    
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     appointment_date = models.DateTimeField()
-    status = models.CharField(max_length=100)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_appointments')
     provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provider_appointments')
     services = models.ManyToManyField(Service, related_name='appointments')
