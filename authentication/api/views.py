@@ -13,6 +13,7 @@ from rest_framework.permissions import AllowAny
 from authentication.models import User
 from core.models.mixins import DynamicViewPermissions
 from core.models.profile import Profile
+from core.models.role import Role
 
 class UserViewSet(ViewSet):
     permission_classes = [DynamicViewPermissions]
@@ -20,13 +21,13 @@ class UserViewSet(ViewSet):
 
     @action(detail=False, methods=['get'])
     def clients(self, request):
-        users = User.objects.filter(profile__profile_type=Profile.ProfileType.CLIENT)
+        users = User.objects.filter(role__role_type=Role.RoleType.CLIENT)
         serializer = self.serializer_class(users, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'])
     def providers(self, request):
-        users = User.objects.filter(profile__profile_type=Profile.ProfileType.PROVIDER)
+        users = User.objects.filter(role__role_type=Role.RoleType.PROVIDER)
         serializer = self.serializer_class(users, many=True)
         return Response(serializer.data)
 
