@@ -22,6 +22,7 @@ class Appointment(TimeStampedModel):
     services = models.ManyToManyField(Service, related_name='appointments')
     is_completed = models.BooleanField(default=False)
     documents = models.ManyToManyField(Document, related_name='appointments', blank=True, null=True)
+    observation = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"Appointment {self.id} for {self.client.name} with {self.provider.name}"

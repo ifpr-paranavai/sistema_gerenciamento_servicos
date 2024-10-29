@@ -25,7 +25,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
             'is_completed', 
             'documents', 
             'document_file', 
-            'rating'
+            'rating',
+            'observation'
         ]
 
     def create(self, validated_data):
