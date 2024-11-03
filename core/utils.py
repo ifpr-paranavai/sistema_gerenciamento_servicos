@@ -4,6 +4,8 @@ from django.db import IntegrityError
 FIXED_FEATURES = [
     ('clients_userviewset', 'Listar clientes do sistema'),
     ('providers_userviewset', 'Listar prestadores do sistema'),
+    ('documents.download_document', 'Realizar download de documentos'),
+    ('documents.preview_document', 'Visualizar preview de documentos'),
 ]
 
 def create_dynamic_features(apps=None):

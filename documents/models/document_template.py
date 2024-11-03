@@ -6,8 +6,8 @@ from service.models import Service
 class DocumentTemplate(TimeStampedModel):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    file_types = models.CharField(max_length=255, help_text="Comma-separated list of allowed file extensions")
-    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='document_templates', blank=True)
+    file_types = models.CharField(max_length=255, help_text="Comma-separated list of allowed file extensions", default='pdf,jpg,jpeg')
+    document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='document_templates', blank=True, null=True)
     
     def __str__(self):
         return self.name

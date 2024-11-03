@@ -1,191 +1,174 @@
 {
-	"info": {
-		"_postman_id": "337b3db0-c9da-46d7-9c27-1540fc38c6a5",
-		"name": "SGS",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "23247589"
-	},
-	"item": [
+	"_type": "export",
+	"__export_format": 4,
+	"__export_date": "2024-09-21T04:50:19.713Z",
+	"__export_source": "insomnia.desktop.app:v10.0.0",
+	"resources": [
 		{
-			"name": "Authentication",
-			"item": [
+			"_id": "req_68516743ef42415b9335acaee40d5dba",
+			"parentId": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"modified": 1726629975652,
+			"created": 1726612233124,
+			"url": "http://127.0.0.1:3000/api/v1/authentication/login/",
+			"name": "New Request",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n    \"email\": \"1@admin.com\",\n\t\t\"password\": \"admin\"\n}"
+			},
+			"parameters": [],
+			"headers": [
 				{
-					"name": "Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": []
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"followRedirects": true,
-						"disableUrlEncoding": false,
-						"disableCookies": false
-					},
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "X-CSRFToken",
-								"value": "60DV4yFb40bqObePSc2x2jPcUkdqesaaI5dEvJtyVdb74fyunsY08G6uZzGNeuV8"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "accept",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"email\": \"1@admin.com\",\n\t\t\"password\": \"admin\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:3000/api/v1/authentication/login/",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"v1",
-								"authentication",
-								"login",
-								""
-							]
-						}
-					},
-					"response": []
+					"name": "X-CSRFToken",
+					"value": "60DV4yFb40bqObePSc2x2jPcUkdqesaaI5dEvJtyVdb74fyunsY08G6uZzGNeuV8"
 				},
 				{
-					"name": "Register",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": []
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"followRedirects": true,
-						"disableUrlEncoding": false,
-						"disableCookies": false
-					},
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"1@admin.com\",\n  \"name\": \"Admin da silva2\",\n  \"password\": \"admin\",\n  \"cpf\": \"12345678910\",\n  \"role\": 1\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://127.0.0.1:3000/api/v1/authentication/register/",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"v1",
-								"authentication",
-								"register",
-								""
-							]
-						}
-					},
-					"response": []
+					"name": "Content-Type",
+					"value": "application/json"
+				},
+				{
+					"name": "accept",
+					"value": "application/json"
 				}
-			]
+			],
+			"authentication": {},
+			"metaSortKey": -1726612233124,
+			"isPrivate": false,
+			"pathParameters": [],
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingFollowRedirects": "global",
+			"_type": "request"
 		},
 		{
-			"name": "Appointments",
-			"item": [
+			"_id": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"parentId": null,
+			"modified": 1726604490844,
+			"created": 1726604490844,
+			"name": "SGS",
+			"description": "",
+			"scope": "collection",
+			"_type": "workspace"
+		},
+		{
+			"_id": "req_ed467aaf6f3244bea57fd154c448b518",
+			"parentId": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"modified": 1726611369153,
+			"created": 1726611363148,
+			"url": "",
+			"name": "New Request",
+			"description": "",
+			"method": "POST",
+			"body": {},
+			"parameters": [],
+			"headers": [
 				{
-					"name": "Appointments",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"type": "text/javascript",
-								"exec": []
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"followRedirects": true,
-						"disableUrlEncoding": false,
-						"disableCookies": false
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI2NjMzNTc3LCJpYXQiOjE3MjY2Mjk5NzcsImp0aSI6ImIxOTJlZGQyNGI0MzQwZjFiMTY2ZWM2MTBlMzJjOWI1IiwidXNlcl9pZCI6IjY4MjgzNmYwLTMyNDgtNDhiMy04NjY2LTM4MmRmYjhlMzMwMCJ9.bGV93Kq95NhLSvIeU_0AwUbIxYkNbbtS3qcyQ9oIWPQ",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "User-Agent",
-								"value": "insomnia/10.0.0"
-							}
-						],
-						"url": {
-							"raw": "http://127.0.0.1:3000/api/v1/appointment/appointments/",
-							"protocol": "http",
-							"host": [
-								"127",
-								"0",
-								"0",
-								"1"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"v1",
-								"appointment",
-								"appointments",
-								""
-							]
-						}
-					},
-					"response": []
+					"name": "User-Agent",
+					"value": "insomnia/10.0.0"
 				}
-			]
+			],
+			"authentication": {},
+			"metaSortKey": -1726611363148,
+			"isPrivate": false,
+			"pathParameters": [],
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingFollowRedirects": "global",
+			"_type": "request"
+		},
+		{
+			"_id": "req_e3dda8ab936742d3875395583a2401e2",
+			"parentId": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"modified": 1726629988653,
+			"created": 1726611289728,
+			"url": "http://127.0.0.1:3000/api/v1/appointment/appointments/",
+			"name": "New Request",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "User-Agent",
+					"value": "insomnia/10.0.0"
+				}
+			],
+			"authentication": {
+				"type": "bearer",
+				"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI2NjMzNTc3LCJpYXQiOjE3MjY2Mjk5NzcsImp0aSI6ImIxOTJlZGQyNGI0MzQwZjFiMTY2ZWM2MTBlMzJjOWI1IiwidXNlcl9pZCI6IjY4MjgzNmYwLTMyNDgtNDhiMy04NjY2LTM4MmRmYjhlMzMwMCJ9.bGV93Kq95NhLSvIeU_0AwUbIxYkNbbtS3qcyQ9oIWPQ",
+				"prefix": ""
+			},
+			"metaSortKey": -1726611289728,
+			"isPrivate": false,
+			"pathParameters": [],
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingFollowRedirects": "global",
+			"_type": "request"
+		},
+		{
+			"_id": "req_7ed2bf0db0d443f3b2ec1daff32e0bd9",
+			"parentId": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"modified": 1726629955369,
+			"created": 1726604641822,
+			"url": "http://127.0.0.1:3000/api/v1/authentication/register/",
+			"name": "New Request",
+			"description": "",
+			"method": "POST",
+			"body": {
+				"mimeType": "application/json",
+				"text": "{\n  \"email\": \"1@admin.com\",\n  \"name\": \"Admin da silva2\",\n  \"password\": \"admin\",\n  \"cpf\": \"12345678910\",\n  \"role\": 1\n}"
+			},
+			"parameters": [],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1726604641822,
+			"isPrivate": false,
+			"pathParameters": [],
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingFollowRedirects": "global",
+			"_type": "request"
+		},
+		{
+			"_id": "env_df575566133ff8106bc271512b34cb5ba8c62d74",
+			"parentId": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"modified": 1726604490846,
+			"created": 1726604490846,
+			"name": "Base Environment",
+			"data": {},
+			"dataPropertyOrder": null,
+			"color": null,
+			"isPrivate": false,
+			"metaSortKey": 1726604490847,
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_df575566133ff8106bc271512b34cb5ba8c62d74",
+			"parentId": "wrk_66d0b5614d514aa89272d206b72f37c8",
+			"modified": 1726604490848,
+			"created": 1726604490848,
+			"name": "Default Jar",
+			"cookies": [],
+			"_type": "cookie_jar"
 		}
 	]
 }

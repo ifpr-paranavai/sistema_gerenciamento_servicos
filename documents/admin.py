@@ -5,10 +5,11 @@ from documents.models.document_template import DocumentTemplate, ServiceDocument
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'file', 'document_type', 'created_at', 'updated_at')
-    list_filter = ('document_type', 'created_at', 'updated_at')
-    search_fields = ('file', 'document_type')
+    list_display = ('id', 'file_name', 'file_type', 'document_type', 'created_at')
+    list_filter = ('document_type', 'file_type', 'created_at')
+    search_fields = ('file_name', 'document_type')
     readonly_fields = ('created_at', 'updated_at')
+    ordering = ('-created_at',)
 
 @admin.register(DocumentTemplate)
 class DocumentTemplateAdmin(admin.ModelAdmin):
