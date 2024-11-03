@@ -8,7 +8,6 @@ from documents.models.document import Document
 from .document_serializers import DocumentSerializer
 
 
-
 class DocumentViewSet(DynamicPermissionModelViewSet):
     queryset = Document.objects.filter(deleted_at=None)
     serializer_class = DocumentSerializer
