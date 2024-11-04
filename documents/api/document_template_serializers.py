@@ -1,44 +1,80 @@
 import json
-
+import base64
+import mimetypes
 from rest_framework import serializers
-
-from documents.api.document_serializers import DocumentSerializer
 from documents.models.document_template import DocumentTemplate, ServiceDocumentRequirement
+from documents.models.document import Document
 
 class DocumentTemplateSerializer(serializers.ModelSerializer):
-    file = serializers.FileField(write_only=True, required=True)
-    document = DocumentSerializer(read_only=True)
+    file = serializers.FileField(write_only=True, required=False, allow_null=True, allow_empty_file=True)
+    document = serializers.SerializerMethodField()
 
     class Meta:
         model = DocumentTemplate
-        fields = ['id', 'name', 'description', 'file_types', 'document', 'file', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'description', 'file_types', 
+                 'document', 'file', 'created_at', 'updated_at']
         read_only_fields = ['document', 'created_at', 'updated_at']
+    
+    def to_internal_value(self, data):
+        if hasattr(data, 'dict'):
+            data = data.dict()
+
+        if 'file' in data:
+            if not data['file'] or data['file'] == 'null' or data['file'] == '':
+                data.pop('file')
+
+        return super().to_internal_value(data)
+
+    def validate_file_types(self, value):
+        """Valida e normaliza file_types"""
+        try:
+            file_types = json.loads(value) if isinstance(value, str) else value
+            if isinstance(file_types, list):
+                normalized = []
+                for ft in file_types:
+                    if isinstance(ft, str):
+                        normalized.extend([ext.strip().lower() for ext in ft.split(',') if ext.strip()])
+                return json.dumps(list(dict.fromkeys(normalized)))
+        except json.JSONDecodeError:
+            pass
+        
+        raise serializers.ValidationError("Formato inválido para file_types")
+
+    def validate(self, attrs):
+        file = attrs.get('file', None)
+        if file and hasattr(file, 'name'):
+            file_extension = file.name.split('.')[-1].lower()
+            try:
+                allowed_extensions = json.loads(attrs['file_types'])
+                if file_extension not in allowed_extensions:
+                    raise serializers.ValidationError({
+                        'file': f'Tipo de arquivo não permitido. Tipos permitidos: {allowed_extensions}'
+                    })
+            except json.JSONDecodeError:
+                raise serializers.ValidationError({
+                    'file_types': 'Formato inválido'
+                })
+
+        return attrs
+
 
     def create(self, validated_data):
         file = validated_data.pop('file', None)
-        if not file:
-            raise serializers.ValidationError({'file': 'Arquivo é obrigatório'})
+        document = None
 
-        file_extension = file.name.split('.')[-1].lower()
-        allowed_extensions = json.loads(validated_data.get('file_types', ''))
-        
-        if file_extension not in [ext.strip() for ext in allowed_extensions]:
-            raise serializers.ValidationError({
-                'file': f'Tipo de arquivo não permitido. Tipos permitidos: {validated_data.get("file_types")}'
-            })
+        if file:
+            try:
+                from documents.models.document import Document
+                document = Document.objects.create(
+                    file_name=file.name,
+                    file_content=file.read(),
+                    file_type=file.name.split('.')[-1].lower(),
+                    document_type='start'
+                )
+            except Exception as e:
+                raise serializers.ValidationError(f'Erro ao salvar arquivo: {str(e)}')
 
         try:
-            # Criar o Document primeiro
-            from documents.models.document import Document
-            document = Document.objects.create(
-                file_name=file.name,
-                file_content=file.read(),
-                file_type=file_extension,
-                file_size=file.size,
-                document_type='start'  # ou você pode adicionar um campo para definir isso
-            )
-
-            # Criar o DocumentTemplate com o Document associado
             template = DocumentTemplate.objects.create(
                 **validated_data,
                 document=document
@@ -46,34 +82,30 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
 
             return template
         except Exception as e:
+            if document:
+                document.delete()
             raise serializers.ValidationError(f'Erro ao salvar template: {str(e)}')
 
     def update(self, instance, validated_data):
         file = validated_data.pop('file', None)
         if file:
-            file_extension = file.name.split('.')[-1].lower()
-            allowed_extensions = json.loads(validated_data.get('file_types', ''))
-            
-            if file_extension not in [ext.strip() for ext in allowed_extensions]:
-                raise serializers.ValidationError({
-                    'file': f'Tipo de arquivo não permitido. Tipos permitidos: {validated_data.get("file_types", instance.file_types)}'
-                })
-
-            # Atualizar o Document existente ou criar um novo
-            if instance.document:
-                instance.document.file_name = file.name
-                instance.document.file_content = file.read()
-                instance.document.file_type = file_extension
-                instance.document.save()
-            else:
-                from documents.models.document import Document
-                document = Document.objects.create(
-                    file_name=file.name,
-                    file_content=file.read(),
-                    file_type=file_extension,
-                    document_type='start'
-                )
-                instance.document = document
+            try:
+                if instance.document:
+                    instance.document.file_name = file.name
+                    instance.document.file_content = file.read()
+                    instance.document.file_type = file.name.split('.')[-1].lower()
+                    instance.document.save()
+                else:
+                    from documents.models.document import Document
+                    document = Document.objects.create(
+                        file_name=file.name,
+                        file_content=file.read(),
+                        file_type=file.name.split('.')[-1].lower(),
+                        document_type='start'
+                    )
+                    instance.document = document
+            except Exception as e:
+                raise serializers.ValidationError(f'Erro ao salvar arquivo: {str(e)}')
 
         for attr, value in validated_data.items():
             if attr != 'file':
@@ -81,7 +113,27 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
-    
+
+    def get_document(self, obj):
+        try:
+            if not obj.document or not obj.document.file_content:
+                return None
+
+            mime_type, _ = mimetypes.guess_type(obj.document.file_name)
+            if not mime_type:
+                mime_type = f'application/{obj.document.file_type}'
+
+            base64_content = base64.b64encode(obj.document.file_content).decode('utf-8')
+            
+            return {
+                'name': obj.document.file_name,
+                'type': mime_type,
+                'lastModified': int(obj.document.updated_at.timestamp() * 1000),
+                'size': len(obj.document.file_content),
+                'dataUrl': f'data:{mime_type};base64,{base64_content}'
+            }
+        except Exception:
+            return None
 
 class ServiceDocumentRequirementSerializer(serializers.ModelSerializer):
     document_template = DocumentTemplateSerializer(read_only=True)
