@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import serializers
 
 from documents.api.document_serializers import DocumentSerializer
@@ -18,7 +20,7 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'file': 'Arquivo é obrigatório'})
 
         file_extension = file.name.split('.')[-1].lower()
-        allowed_extensions = validated_data.get('file_types', '').split(',')
+        allowed_extensions = json.loads(validated_data.get('file_types', ''))
         
         if file_extension not in [ext.strip() for ext in allowed_extensions]:
             raise serializers.ValidationError({
