@@ -51,7 +51,7 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
         file = validated_data.pop('file', None)
         if file:
             file_extension = file.name.split('.')[-1].lower()
-            allowed_extensions = validated_data.get('file_types', instance.file_types).split(',')
+            allowed_extensions = json.loads(validated_data.get('file_types', ''))
             
             if file_extension not in [ext.strip() for ext in allowed_extensions]:
                 raise serializers.ValidationError({
