@@ -5,14 +5,14 @@ from documents.models.document import Document
 
 class DocumentSerializer(serializers.ModelSerializer):
     file = serializers.FileField(write_only=True)
-    content_base64 = serializers.SerializerMethodField()
+    file_content = serializers.SerializerMethodField()
 
     class Meta:
         model = Document
-        fields = ['id', 'file', 'file_name', 'file_type', 'document_type', 'content_base64', 'created_at', 'updated_at']
-        read_only_fields = ['file_name', 'file_type', 'content_base64', 'created_at', 'updated_at']
+        fields = ['id', 'file', 'file_name', 'file_type', 'file_size', 'document_type', 'file_content', 'created_at', 'updated_at']
+        read_only_fields = ['file_name', 'file_type', 'file_content', 'file_size', 'created_at', 'updated_at']
 
-    def get_content_base64(self, obj):
+    def get_file_content(self, obj):
         if obj.file_content:
             return base64.b64encode(obj.file_content).decode('utf-8')
         return None
@@ -32,6 +32,7 @@ class DocumentSerializer(serializers.ModelSerializer):
             file_name=file.name,
             file_content=file_content,
             file_type=file_extension,
+            file_size=file.size,
             document_type=validated_data.get('document_type')
         )
         return document

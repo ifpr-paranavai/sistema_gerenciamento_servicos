@@ -42,6 +42,7 @@ class DocumentViewSet(DynamicPermissionModelViewSet):
                 file_name=file.name,
                 file_content=file_content,
                 file_type=file_extension,
+                file_size=file.size,
                 document_type=document_type
             )
 

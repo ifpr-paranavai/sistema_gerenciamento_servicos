@@ -34,6 +34,7 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
                 file_name=file.name,
                 file_content=file.read(),
                 file_type=file_extension,
+                file_size=file.size,
                 document_type='start'  # ou você pode adicionar um campo para definir isso
             )
 

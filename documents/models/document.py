@@ -16,6 +16,7 @@ class Document(TimeStampedModel):
     file_name = models.CharField(max_length=255, blank=True)
     file_content = models.BinaryField(blank=True)
     file_type = models.CharField(max_length=10, blank=True)
+    file_size = models.IntegerField(blank=True, null=True)
     document_type = models.CharField(max_length=5, choices=DOCUMENT_TYPES)
     
     def __str__(self):
