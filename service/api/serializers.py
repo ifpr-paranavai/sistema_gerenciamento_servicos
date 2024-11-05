@@ -61,22 +61,13 @@ class ServiceSerializer(serializers.ModelSerializer):
                 service.document_requirements.all().delete()
                 
                 for doc_req in document_requirements_data:
-                    # Verifica se o document_template existe
-                    template_id = doc_req.get('document_template')
+                    template_id = doc_req.get('document_template').id
                     if template_id:
-                        try:
-                            document_template = DocumentTemplate.objects.get(id=template_id)
-                            ServiceDocumentRequirement.objects.create(
-                                service=service,
-                                document_template=document_template,
-                                is_required=doc_req.get('is_required', False)
-                            )
-                        except DocumentTemplate.DoesNotExist:
-                            raise serializers.ValidationError(
-                                f'Template de documento com ID {template_id} não existe.'
-                            )
+                        ServiceDocumentRequirement.objects.create(
+                            service=service,
+                            document_template_id=template_id,
+                            is_required=doc_req.get('is_required', False)
+                        )
                 return service
-        except serializers.ValidationError as e:
-            raise e
         except Exception as e:
-            raise serializers.ValidationError(f'Erro ao atualizar requisitos de documentos: {str(e)}')
+            raise serializers.ValidationError(f'Erro ao criar requisitos de documentos: {str(e)}')
