@@ -56,23 +56,58 @@ class AppointmentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Contexto da requisição não encontrado")
  
         service_id = request.data.get('services')
-        if not service_id:
-            raise serializers.ValidationError({"services": "Serviço é obrigatório"})
+        provider_id = request.data.get('provider')
+        appointment_date = request.data.get('appointment_date')
 
-        services = [service_id]  
-        
-        required_documents = ServiceDocumentRequirement.objects.filter(
-            service__in=services,
-            is_required=True
-        ).select_related('document_template')
+        if not all([service_id, provider_id, appointment_date]):
+            raise serializers.ValidationError({
+                "error": "Serviço, prestador e data são obrigatórios"
+            })
 
-        for requirement in required_documents:
-            if f'document_requirement_{requirement.id}' not in request.FILES:
+        try:
+            service = Service.objects.get(id=service_id)
+            exclude_id = self.instance.id if self.instance else None
+            
+            availability = Appointment.check_availability(
+                appointment_date,
+                provider_id,
+                service.duration,
+                exclude_id
+            )
+
+            if not availability['is_available']:
+                conflicts = availability['conflicts']
+                conflict_messages = [
+                    f"Conflito com agendamento de {c['service']} para {c['client']} "
+                    f"({c['start'].strftime('%d/%m/%Y %H:%M')} - "
+                    f"{c['end'].strftime('%d/%m/%Y %H:%M')}) "
+                    f"[Status: {c['status']}]"
+                    for c in conflicts
+                ]
+                
                 raise serializers.ValidationError({
-                    'documents': f'Documento obrigatório faltando: {requirement.document_template.name}'
+                    'appointment_date': [
+                        "Horário indisponível para agendamento.",
+                        *conflict_messages
+                    ]
                 })
 
-        return attrs
+            services = [service_id]
+            required_documents = ServiceDocumentRequirement.objects.filter(
+                service__in=services,
+                is_required=True
+            ).select_related('document_template')
+
+            for requirement in required_documents:
+                if f'document_requirement_{requirement.id}' not in request.FILES:
+                    raise serializers.ValidationError({
+                        'documents': f'Documento obrigatório faltando: {requirement.document_template.name}'
+                    })
+
+            return attrs
+
+        except Service.DoesNotExist:
+            raise serializers.ValidationError({"service": "Serviço não encontrado"})
     
     def create(self, validated_data):
         request = self.context.get('request')
@@ -129,7 +164,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
             if file_key in files:
                 file = files[file_key]
                 
-                
                 file_extension = file.name.split('.')[-1].lower()
                 allowed_types = requirement.document_template.file_types
                 
@@ -185,7 +219,6 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 instance.client_id = client_id
             if provider_id:
                 instance.provider_id = provider_id
-
             if service_id:
                 service = Service.objects.get(id=service_id)
                 instance.services.clear()
