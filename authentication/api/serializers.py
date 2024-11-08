@@ -16,7 +16,12 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'senha': {'write_only': True},
         }
-
+       
+    def __init__(self, *args, **kwargs):
+        super(UserSerializer, self).__init__(*args, **kwargs)
+        if self.context.get('remove_password'):
+            self.fields.pop('password')
+        
     def create(self, validated_data):
         roles_data = validated_data.pop('role')
         user = User.objects.create(**validated_data)

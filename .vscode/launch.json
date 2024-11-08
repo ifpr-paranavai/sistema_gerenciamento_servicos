@@ -6,7 +6,7 @@
   "configurations": [
     {
       "name": "Depurador do Python: Django",
-      "type": "debugpy",
+      "type": "python",
       "request": "launch",
       "args": [
         "runserver",

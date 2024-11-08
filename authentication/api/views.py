@@ -32,15 +32,21 @@ class UserViewSet(ViewSet):
         return Response(serializer.data)
 
 class AuthenticationView(ViewSet):
-    authentication_classes = [JWTAuthentication]
+    # TODO -> Corrigir validação dos end-points
+    # authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
         content = {'message': 'List of items'}
         return Response(content, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
-        content = {'message': f'Item with id {pk}'}
-        return Response(content, status=status.HTTP_200_OK)
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(user, context={'remove_password': True})
+        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], url_path='register')
     def register(self, request, *args, **kwargs):
