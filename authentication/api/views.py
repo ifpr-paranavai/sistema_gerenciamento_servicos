@@ -1,10 +1,13 @@
 import bcrypt
+from django.utils import timezone
+from django.db.models import Prefetch
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from authentication.api.serializers import SimpleUserSerializer, UserSerializer
+from appointment.models.appointment import Appointment
+from authentication.api.serializers import ProviderScheduleSerializer, SimpleUserSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework.views import APIView
@@ -27,10 +30,13 @@ class UserViewSet(ViewSet):
 
     @action(detail=False, methods=['get'])
     def providers(self, request):
-        users = User.objects.filter(role__role_type=Role.RoleType.PROVIDER)
-        serializer = self.serializer_class(users, many=True)
+        users = User.objects.filter(
+            role__role_type=Role.RoleType.PROVIDER
+        )
+        serializer = ProviderScheduleSerializer(users, many=True)
         return Response(serializer.data)
-
+    
+    
 class AuthenticationView(ViewSet):
     # TODO -> Corrigir validação dos end-points
     # authentication_classes = [JWTAuthentication]
