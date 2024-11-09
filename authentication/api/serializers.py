@@ -4,6 +4,7 @@ from appointment.models.appointment import Appointment
 from authentication.models import User
 from core.api.serializers import FeatureSerializer
 from core.models.role import Role
+from core.api.serializers import ProfileSerializer
         
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.SlugRelatedField(
@@ -11,10 +12,11 @@ class UserSerializer(serializers.ModelSerializer):
         slug_field='id'
     )
     features = FeatureSerializer(many=True, read_only=True)
+    profile = ProfileSerializer()
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'name', 'password', 'cpf', 'role', 'features']
+        fields = ['id', 'email', 'name', 'password', 'cpf', 'role', 'features', 'profile']
         extra_kwargs = {
             'senha': {'write_only': True},
         }
@@ -23,6 +25,8 @@ class UserSerializer(serializers.ModelSerializer):
         super(UserSerializer, self).__init__(*args, **kwargs)
         if self.context.get('remove_password'):
             self.fields.pop('password')
+        if self.context.get('remove_features'):
+            self.fields.pop('features')
         
     def create(self, validated_data):
         roles_data = validated_data.pop('role')

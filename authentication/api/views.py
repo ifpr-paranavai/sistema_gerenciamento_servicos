@@ -51,7 +51,7 @@ class AuthenticationView(ViewSet):
         except User.DoesNotExist:
             return Response({'error': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UserSerializer(user, context={'remove_password': True})
+        serializer = UserSerializer(user, context={'remove_password': True, 'remove_features': True})
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['post'], url_path='register')

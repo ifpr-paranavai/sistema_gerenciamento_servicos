@@ -21,6 +21,8 @@ class User(TimeStampedModel):
         return self.email
 
     def save(self, *args, **kwargs):
+        if not self.profile: 
+            self.profile = Profile.objects.create() 
         if not self.password.startswith('pbkdf2_') and not self.password.startswith('$2b$'):
             self.set_password(self.password)
         super().save(*args, **kwargs)
