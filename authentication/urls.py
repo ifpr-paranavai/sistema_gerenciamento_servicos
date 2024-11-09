@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from authentication.api.views import AuthenticationView, CustomTokenObtainPairView, CustomTokenRefreshView, UserViewSet
+from authentication.api.views import AuthenticationView, CustomTokenObtainPairView, CustomTokenRefreshView
 
 
 router = DefaultRouter()

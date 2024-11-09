@@ -36,6 +36,10 @@ class UserViewSet(ViewSet):
         serializer = ProviderScheduleSerializer(users, many=True)
         return Response(serializer.data)
     
+    @action(detail=True, methods=['put'], url_path='update-user')
+    def update_user(self, request):
+        return Response(status=status.HTTP_200_OK)
+    
     
 class AuthenticationView(ViewSet):
     # TODO -> Corrigir validação dos end-points
