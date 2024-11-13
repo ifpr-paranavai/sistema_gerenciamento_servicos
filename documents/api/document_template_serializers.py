@@ -8,6 +8,7 @@ from documents.models.document import Document
 class DocumentTemplateSerializer(serializers.ModelSerializer):
     file = serializers.FileField(write_only=True, required=False, allow_null=True, allow_empty_file=True)
     document = serializers.SerializerMethodField()
+    file_types = serializers.SerializerMethodField()
 
     class Meta:
         model = DocumentTemplate
@@ -134,6 +135,12 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
             }
         except Exception:
             return None
+        
+    def get_file_types(self, obj):
+        try:
+            return json.loads(obj.file_types)
+        except json.JSONDecodeError:
+            return []
 
 class ServiceDocumentRequirementSerializer(serializers.ModelSerializer):
     document_template = DocumentTemplateSerializer(read_only=True)
