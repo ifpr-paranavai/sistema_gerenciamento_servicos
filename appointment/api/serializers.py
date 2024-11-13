@@ -1,11 +1,14 @@
 from django.utils import timezone
 from rest_framework import serializers
-from appointment.models import Appointment, Review
+from typing import List, Dict, Any
+from appointment.models import Appointment
+from appointment.models.review import Review
 from authentication.api.serializers import SimpleUserSerializer
 from documents.api.document_serializers import DocumentSerializer
 from documents.models.document import Document
 from documents.models.document_template import ServiceDocumentRequirement
 from service.api.serializers import ServiceSerializer
+from service.models.document_service import DocumentService
 from service.models.service import Service
 
 class AppointmentSerializer(serializers.ModelSerializer):
@@ -25,107 +28,111 @@ class AppointmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Appointment
         fields = [
-            'id', 
-            'appointment_date', 
-            'status', 
-            'client', 
-            'provider', 
-            'services',
-            'service_ids', 
-            'is_completed', 
-            'documents', 
-            'document_file', 
-            'rating',
-            'observation'
+            'id', 'appointment_date', 'status', 'client', 'provider', 
+            'services', 'service_ids', 'is_completed', 'documents', 
+            'document_file', 'rating', 'observation'
         ]
-    
-    def get_rating(self, obj):
+        read_only_fields = ['is_completed', 'rating']
+
+    def get_rating(self, obj: Appointment) -> int:
         review = obj.reviews.first()
-        if review:
-            return review.rating
-        return None
+        return review.rating if review else None
     
-    def get_documents(self, obj):
+    def get_documents(self, obj: Appointment) -> List[Dict]:
+        """Retorna apenas documentos ativos (não deletados)"""
         active_documents = obj.documents.filter(deleted_at__isnull=True)
         return DocumentSerializer(active_documents, many=True).data
+    
 
-    def validate(self, attrs):
+    def validate(self, attrs: Dict) -> Dict:
+        """Validação completa dos dados do agendamento"""
         request = self.context.get('request')
-        
         if not request:
             raise serializers.ValidationError("Contexto da requisição não encontrado")
- 
-        service_id = request.data.get('services')
-        provider_id = request.data.get('provider')
-        appointment_date = request.data.get('appointment_date')
 
-        if not all([service_id, provider_id, appointment_date]):
-            raise serializers.ValidationError({
-                "error": "Serviço, prestador e data são obrigatórios"
-            })
+        self._validate_required_fields(request.data)
+        self._validate_service_availability(request.data, attrs)
+        self._validate_required_documents(request.data, request.FILES)
 
+        return attrs
+
+    def _validate_required_fields(self, data: Dict) -> None:
+        """Valida campos obrigatórios"""
+        required_fields = {
+            'services': 'Serviço é obrigatório',
+            'provider': 'Prestador é obrigatório',
+            'appointment_date': 'Data do agendamento é obrigatória'
+        }
+
+        missing_fields = {
+            field: message for field, message in required_fields.items()
+            if not data.get(field)
+        }
+
+        if missing_fields:
+            raise serializers.ValidationError(missing_fields)
+
+    def _validate_service_availability(self, request_data: Dict, attrs: Dict) -> None:
+        """Valida disponibilidade do serviço"""
         try:
+            service_id = request_data.get('services')
             service = Service.objects.get(id=service_id)
             exclude_id = self.instance.id if self.instance else None
             
             availability = Appointment.check_availability(
-                appointment_date,
-                provider_id,
+                request_data.get('appointment_date'),
+                request_data.get('provider'),
                 service.duration,
                 exclude_id
             )
 
             if not availability['is_available']:
-                conflicts = availability['conflicts']
-                conflict_messages = [
-                    f"Conflito com agendamento de {c['service']} para {c['client']} "
-                    f"({c['start'].strftime('%d/%m/%Y %H:%M')} - "
-                    f"{c['end'].strftime('%d/%m/%Y %H:%M')}) "
-                    f"[Status: {c['status']}]"
-                    for c in conflicts
-                ]
-                
-                raise serializers.ValidationError({
-                    'appointment_date': [
-                        "Horário indisponível para agendamento.",
-                        *conflict_messages
-                    ]
-                })
-
-            services = [service_id]
-            required_documents = ServiceDocumentRequirement.objects.filter(
-                service__in=services,
-                is_required=True
-            ).select_related('document_template')
-
-            for requirement in required_documents:
-                if f'document_requirement_{requirement.id}' not in request.FILES:
-                    raise serializers.ValidationError({
-                        'documents': f'Documento obrigatório faltando: {requirement.document_template.name}'
-                    })
-
-            return attrs
-
+                self._raise_conflict_error(availability['conflicts'])
         except Service.DoesNotExist:
             raise serializers.ValidationError({"service": "Serviço não encontrado"})
-    
-    def create(self, validated_data):
+
+    def _raise_conflict_error(self, conflicts: List[Dict]) -> None:
+        """Formata e lança erro de conflito de horário"""
+        conflict_messages = [
+            f"Conflito com agendamento de {c['service']} para {c['client']} "
+            f"({c['start'].strftime('%d/%m/%Y %H:%M')} - "
+            f"{c['end'].strftime('%d/%m/%Y %H:%M')}) "
+            f"[Status: {c['status']}]"
+            for c in conflicts
+        ]
+        
+        raise serializers.ValidationError({
+            'appointment_date': [
+                "Horário indisponível para agendamento.",
+                *conflict_messages
+            ]
+        })
+
+    def _validate_required_documents(self, data: Dict, files: Dict) -> None:
+        """Valida documentos obrigatórios"""
+        service_id = data.get('services')
+        if not service_id:
+            return
+
+        required_docs = ServiceDocumentRequirement.objects.filter(
+            service__in=[service_id],
+            is_required=True
+        ).select_related('document_template')
+
+        for requirement in required_docs:
+            if f'document_requirement_{requirement.id}' not in files:
+                raise serializers.ValidationError({
+                    'documents': f'Documento obrigatório faltando: {requirement.document_template.name}'
+                })
+
+    def create(self, validated_data: Dict[str, Any]) -> Appointment:
         request = self.context.get('request')
         client_id = request.data.get('client')
         provider_id = request.data.get('provider')
         service_id = request.data.get('services')
-        
-        if not client_id or not provider_id:
-            raise serializers.ValidationError({
-                "error": "Client e Provider são obrigatórios"
-            })
-
-        if not service_id:
-            raise serializers.ValidationError({
-                "error": "Serviço é obrigatório"
-            })
 
         try:
+            # Remove services do validated_data pois será adicionado depois
             validated_data.pop('services', None)
             
             appointment = Appointment.objects.create(
@@ -134,10 +141,16 @@ class AppointmentSerializer(serializers.ModelSerializer):
                 **validated_data
             )
             
+            # Adiciona serviço
             service = Service.objects.get(id=service_id)
             appointment.services.add(service)
 
-            documents = self._save_documents(request.FILES, appointment, [service_id])
+            # Processa documentos
+            documents = self._process_documents(
+                request.FILES, 
+                [service_id], 
+                is_update=False
+            )
             
             if documents:
                 appointment.documents.add(*documents)
@@ -148,151 +161,112 @@ class AppointmentSerializer(serializers.ModelSerializer):
             if 'appointment' in locals():
                 appointment.delete()
             raise serializers.ValidationError(str(e))
-    
-    def _save_documents(self, files, appointment, services):
-        """
-        Salva os documentos associados ao agendamento
-        """
-        documents_created = []
-        document_requirements = ServiceDocumentRequirement.objects.filter(
-            service__in=services
-        ).select_related('document_template')
 
-        for requirement in document_requirements:
-            file_key = f'document_requirement_{requirement.id}'
-            
-            if file_key in files:
-                file = files[file_key]
-                
-                file_extension = file.name.split('.')[-1].lower()
-                allowed_types = requirement.document_template.file_types
-                
-                if isinstance(allowed_types, str):
-                    allowed_types = eval(allowed_types)
-                
-                if file_extension not in allowed_types:
-                    raise serializers.ValidationError(
-                        f'Tipo de arquivo inválido para {requirement.document_template.name}. '
-                        f'Tipos permitidos: {", ".join(allowed_types)}'
-                    )
-
-                try: 
-                    document = Document(
-                        file_name=file.name,
-                        file_type=file.content_type.split('/')[1],
-                        file_size=file.size,
-                        document_type='start'
-                    )
-                    
-                    document.file_content = file.read()
-                    document.save()
-                    
-                    documents_created.append(document)
-                except Exception as e:
-                    
-                    for doc in documents_created:
-                        doc.delete()
-                    raise serializers.ValidationError(f"Erro ao salvar documento: {str(e)}")
-
-        return documents_created
-    
-    def update(self, instance, validated_data):
+    def update(self, instance: Appointment, validated_data: Dict[str, Any]) -> Appointment:
+        """Atualiza agendamento existente"""
         request = self.context.get('request')
         if not request:
             raise serializers.ValidationError("Contexto da requisição não encontrado")
 
-        service_id = request.data.get('services')
-        client_id = request.data.get('client')
-        provider_id = request.data.get('provider')
-        status = request.data.get('status')
-        appointment_date = request.data.get('appointment_date')
-        observation = request.data.get('observation')
-
         try:
-            if status:
-                instance.status = status
-            if appointment_date:
-                instance.appointment_date = appointment_date
-            if observation is not None:
-                instance.observation = observation
-            if client_id:
-                instance.client_id = client_id
-            if provider_id:
-                instance.provider_id = provider_id
+            instance = self._update_basic_fields(instance, request.data)
+            
+            service_id = request.data.get('services')
             if service_id:
                 service = Service.objects.get(id=service_id)
                 instance.services.clear()
                 instance.services.add(service)
 
+            if request.FILES:
+                new_documents = self._process_documents(
+                    request.FILES,
+                    [service_id] if service_id else [s.id for s in instance.services.all()],
+                    is_update=True,
+                    appointment=instance
+                )
+                if new_documents:
+                    instance.documents.add(*new_documents)
+
             instance.save()
-            
-            new_documents = self._process_documents_update(request.FILES, instance, service_id)
-
-            if new_documents:
-                instance.documents.add(*new_documents)
-
             return instance
 
         except Exception as e:
             raise serializers.ValidationError(str(e))
-    
-    def _process_documents_update(self, files, appointment, service_id):
-        """
-        Processa os documentos na atualização usando soft delete
-        """
+
+    def _update_basic_fields(self, instance: Appointment, data: Dict) -> Appointment:
+        """Atualiza campos básicos do agendamento"""
+        fields = {
+            'status': 'status',
+            'appointment_date': 'appointment_date',
+            'observation': 'observation',
+            'client_id': 'client_id',
+            'provider_id': 'provider_id'
+        }
+
+        for field, attr in fields.items():
+            if field in data and data[field] is not None:
+                setattr(instance, attr, data[field])
+
+        return instance
+
+    def _process_documents(
+        self, 
+        files: Dict, 
+        service_ids: List[int], 
+        is_update: bool = False,
+        appointment: Appointment = None
+    ) -> List[Document]:
+        """Processa documentos do agendamento"""
         if not files:
             return []
-        
+
+        document_service = DocumentService()
         documents_created = []
-        
+
         try:
-            appointment.documents.update(deleted_at=timezone.now())
-            document_requirements = ServiceDocumentRequirement.objects.filter(
-                service=service_id
+            if is_update and appointment:
+                appointment.documents.update(deleted_at=timezone.now())
+
+            requirements = ServiceDocumentRequirement.objects.filter(
+                service__in=service_ids
             ).select_related('document_template')
-            
-            for requirement in document_requirements:
+
+            for requirement in requirements:
                 file_key = f'document_requirement_{requirement.id}'
-                
                 if file_key in files:
                     file = files[file_key]
                     
-                    file_extension = file.name.split('.')[-1].lower()
-                    allowed_types = requirement.document_template.file_types
-                    
-                    if isinstance(allowed_types, str):
-                        allowed_types = eval(allowed_types)
-                    
-                    if file_extension not in allowed_types:
-                        raise serializers.ValidationError(
-                            f'Tipo de arquivo inválido para {requirement.document_template.name}. '
-                            f'Tipos permitidos: {", ".join(allowed_types)}'
-                        )
+                    # Valida tipo do arquivo
+                    document_service.validate_file_type(
+                        file, 
+                        requirement.document_template.file_types
+                    )
 
-                    if appointment.documents.filter(file_name=file.name).exists():
+                    # Verifica se documento já existe (em caso de update)
+                    if is_update and appointment and appointment.documents.filter(
+                        file_name=file.name
+                    ).exists():
                         document = appointment.documents.get(file_name=file.name)
                         document.deleted_at = None
                         document.save()
                         documents_created.append(document)
                     else:
-                        document = Document(
+                        # Cria novo documento
+                        document = Document.objects.create(
                             file_name=file.name,
-                            file_type=file.content_type.split('/')[1],
-                            file_size=file.size,
+                            file_content=file.read(),
+                            file_type=file.name.split('.')[-1].lower(),
                             document_type='start'
                         )
-                        
-                        document.file_content = file.read()
-                        document.save()
-                        
                         documents_created.append(document)
-                
+
             return documents_created
+
         except Exception as e:
             for doc in documents_created:
                 doc.delete()
-            raise serializers.ValidationError(f"Erro ao atualizar documentos: {str(e)}")
-
+            raise serializers.ValidationError(f"Erro ao processar documentos: {str(e)}")
+        
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
