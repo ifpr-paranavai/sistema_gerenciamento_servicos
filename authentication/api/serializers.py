@@ -12,7 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
         slug_field='id'
     )
     features = FeatureSerializer(many=True, read_only=True)
-    profile = ProfileSerializer()
+    profile = ProfileSerializer(required=False, allow_null=True)
 
     class Meta:
         model = User
