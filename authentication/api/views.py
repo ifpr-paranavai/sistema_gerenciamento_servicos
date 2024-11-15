@@ -37,7 +37,8 @@ class UserViewSet(ViewSet):
         return Response(serializer.data)
     
     @action(detail=True, methods=['put'], url_path='update-user')
-    def update_user(self, request):
+    def update_user_profile(self, request):
+        print(request.data)
         return Response(status=status.HTTP_200_OK)
     
     

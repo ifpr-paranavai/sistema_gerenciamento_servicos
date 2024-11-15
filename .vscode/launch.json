@@ -1,19 +1,38 @@
 {
-  // Use o IntelliSense para saber mais sobre os atributos possíveis.
-  // Focalizar para exibir as descrições dos atributos existentes.
-  // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "name": "Depurador do Python: Django",
-      "type": "python",
-      "request": "launch",
-      "args": [
-        "runserver",
-        "3000"
-      ],
-      "django": true,
-      "program": "${workspaceFolder}/manage.py"
-    }
-  ]
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Depurador do Python: Django",
+            "type": "python",
+            "request": "launch",
+            "args": [
+                "runserver",
+                "3000"
+            ],
+            "django": true,
+            "program": "${workspaceFolder}/manage.py"
+        },
+        {
+            "name": "Depurador do Python: Migrate",
+            "type": "python",
+            "request": "launch",
+            "args": [
+                "migrate"
+            ],
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Depurador do Python: Makemigrations",
+            "type": "python",
+            "request": "launch",
+            "args": [
+                "makemigrations"
+            ],
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "console": "integratedTerminal"
+        }
+    ]
 }
