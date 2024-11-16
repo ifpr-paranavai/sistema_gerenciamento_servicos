@@ -45,3 +45,9 @@ de ambiente.
 
 # Gerar imagens dos modelos
   `python manage.py graph_models --pydot -a -g -o my_project_visu.png `
+
+# Criar as permissões
+  `python manage.py create_permissions`
+
+# Relacionar as permissões
+  `python manage.py assign_permissions`
