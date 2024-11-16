@@ -6,6 +6,14 @@ from .enums import DjangoActions
 class ModelFeatureGenerator:
     EXCLUDED_APPS = {'admin', 'contenttypes', 'sessions', 'auth'}
     
+    FIXED_FEATURES = [
+        ('clients_userviewset', 'Listar clientes do sistema'),
+        ('providers_userviewset', 'Listar prestadores do sistema'),
+        ('update_user_profile_userviewset', 'Atualizar perfil do usuário'),
+        ('documents.download_document', 'Realizar download de documentos'),
+        ('documents.preview_document', 'Visualizar preview de documentos'),
+    ]
+    
     def __init__(self):
         self.features: Set[str] = set()
         self.descriptions: Dict[str, str] = {}
@@ -14,8 +22,18 @@ class ModelFeatureGenerator:
         """Gera o nome da feature para um modelo e ação específicos"""
         return f"{app_label}.{action.value}_{model_name}"
         
+    def add_fixed_features(self) -> None:
+        """Adiciona as features fixas ao conjunto de features"""
+        for name, description in self.FIXED_FEATURES:
+            self.features.add(name)
+            self.descriptions[name] = description
+        
     def scan_models(self) -> None:
         """Escaneia todos os modelos do Django e gera as features correspondentes"""
+        # Primeiro adiciona as features fixas
+        self.add_fixed_features()
+        
+        # Depois escaneia os modelos
         for model in django_apps.get_models():
             if model._meta.app_label in self.EXCLUDED_APPS:
                 continue
@@ -35,8 +53,20 @@ class ModelFeatureGenerator:
             for action in DjangoActions
         ]
 
+    def get_fixed_features(self, prefix: str = None) -> List[str]:
+        """
+        Retorna as features fixas, opcionalmente filtradas por prefixo
+        
+        Args:
+            prefix: Prefixo para filtrar as features (ex: 'documents.')
+        """
+        features = [name for name, _ in self.FIXED_FEATURES]
+        if prefix:
+            features = [f for f in features if f.startswith(prefix)]
+        return features
+
 class DynamicFeatures:
-    """Classe para gerenciar features dinâmicas do sistema"""
+    """Classe para gerenciar features dinâmicas e fixas do sistema"""
     
     def __init__(self):
         self._generator = ModelFeatureGenerator()
@@ -53,10 +83,14 @@ class DynamicFeatures:
     def get_model_features(self, app_label: str, model_name: str) -> List[str]:
         return self._generator.get_model_features(app_label, model_name)
     
+    def get_fixed_features(self, prefix: str = None) -> List[str]:
+        return self._generator.get_fixed_features(prefix)
+    
     def create_all_features(self) -> None:
-        """Cria todas as features dinâmicas no banco de dados"""
+        """Cria todas as features (dinâmicas e fixas) no banco de dados"""
         Feature = django_apps.get_model('core', 'Feature')
         
+        # Criar/atualizar todas as features em uma única operação
         for feature_name in self.features:
             try:
                 Feature.objects.get_or_create(

@@ -1,12 +1,9 @@
 import bcrypt
-from django.utils import timezone
-from django.db.models import Prefetch
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import action
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from appointment.models.appointment import Appointment
 from authentication.api.serializers import ProviderScheduleSerializer, SimpleUserSerializer, UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -15,7 +12,6 @@ from rest_framework.permissions import AllowAny
 
 from authentication.models import User
 from core.models.mixins import DynamicViewPermissions
-from core.models.profile import Profile
 from core.models.role import Role
 
 class UserViewSet(ViewSet):
@@ -37,14 +33,40 @@ class UserViewSet(ViewSet):
         return Response(serializer.data)
     
     @action(detail=True, methods=['put'], url_path='update-user')
-    def update_user_profile(self, request):
-        print(request.data)
-        return Response(status=status.HTTP_200_OK)
+    def update_user_profile(self, request, pk=None):
+        try:
+            user = get_object_or_404(
+                User.objects.select_related('profile'),
+                id=pk,
+                deleted_at__isnull=True
+            )
+            
+            serializer = UserSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+            
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        except Exception as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
     
     
 class AuthenticationView(ViewSet):
-    # TODO -> Corrigir validação dos end-points
-    # authentication_classes = [JWTAuthentication]
 
     def list(self, request, *args, **kwargs):
         content = {'message': 'List of items'}
