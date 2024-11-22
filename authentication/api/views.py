@@ -41,11 +41,23 @@ class UserViewSet(ViewSet):
                 deleted_at__isnull=True
             )
             
+            user.name = request.data['name']
+            user.email = request.data['email']
+            user.cpf = request.data['cpf']
+            user.profile.profile_picture = request.data['profile_picture']
+            user.profile.street = request.data['street']
+            user.profile.number = request.data['number']
+            user.profile.city = request.data['city']
+            user.profile.state = request.data['state']
+            user.profile.zip_code = request.data['zip_code']
+            
+            user.profile.save()
+            
             serializer = UserSerializer(
                 user,
                 data=request.data,
                 partial=True
-            )
+            )            
             
             if serializer.is_valid():
                 serializer.save()
