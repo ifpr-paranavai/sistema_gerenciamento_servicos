@@ -1,27 +1,34 @@
+# serializers.py
 from rest_framework import serializers
+from appointment.models.appointment import Appointment
 
 class ServiceStatSerializer(serializers.Serializer):
-    serviceId = serializers.IntegerField(source='id')
-    serviceName = serializers.CharField(source='name')
-    totalValue = serializers.IntegerField()  # Alterado para inteiro pois representa contagem
+    serviceName = serializers.CharField()
+    date = serializers.DateTimeField()
+    totalValue = serializers.DecimalField(max_digits=10, decimal_places=2)
+    quantity = serializers.IntegerField()
+    averageValue = serializers.DecimalField(max_digits=10, decimal_places=2)
 
-class ServiceDetailSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-
-class AppointmentStatSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+class AppointmentSerializer(serializers.ModelSerializer):
     serviceName = serializers.SerializerMethodField()
-    clientName = serializers.CharField(source='client.name')
-    date = serializers.DateTimeField(source='appointment_date')
-    status = serializers.CharField()
-    services = ServiceDetailSerializer(many=True)  # Adicionado campo services
+    clientName = serializers.SerializerMethodField()
+    providerName = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Appointment
+        fields = ('id', 'serviceName', 'clientName', 'providerName', 'appointment_date', 'status')
 
     def get_serviceName(self, obj):
-        return ', '.join(s.name for s in obj.services.all())
+        return ", ".join([service.name for service in obj.services.all()])
+
+    def get_clientName(self, obj):
+        return obj.client.name if obj.client else None
+
+    def get_providerName(self, obj):
+        return obj.provider.name if obj.provider else None
 
 class DashboardStatSerializer(serializers.Serializer):
-    totalRevenue = serializers.IntegerField()  # Alterado para inteiro pois representa contagem
+    totalRevenue = serializers.DecimalField(max_digits=10, decimal_places=2)
     serviceStats = ServiceStatSerializer(many=True)
-    currentAppointments = AppointmentStatSerializer(many=True)
-    upcomingAppointments = AppointmentStatSerializer(many=True)
+    currentAppointments = AppointmentSerializer(many=True)
+    upcomingAppointments = AppointmentSerializer(many=True)
