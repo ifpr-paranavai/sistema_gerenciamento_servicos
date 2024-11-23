@@ -7,6 +7,7 @@ class ModelFeatureGenerator:
     EXCLUDED_APPS = {'admin', 'contenttypes', 'sessions', 'auth'}
     
     FIXED_FEATURES = [
+        ('list_dashboardstatsview', 'Listar estatísticas do dashboard'),
         ('clients_userviewset', 'Listar clientes do sistema'),
         ('providers_userviewset', 'Listar prestadores do sistema'),
         ('update_user_profile_userviewset', 'Atualizar perfil do usuário'),
