@@ -2,15 +2,12 @@ from django.utils import timezone
 from rest_framework import serializers
 from appointment.models.appointment import Appointment
 from authentication.models import User
-from core.api.serializers import FeatureSerializer
+from core.api.serializers import FeatureSerializer, RoleSerializer
 from core.models.role import Role
 from core.api.serializers import ProfileSerializer
         
 class UserSerializer(serializers.ModelSerializer):
-    role = serializers.SlugRelatedField(
-        queryset=Role.objects.all(),
-        slug_field='id'
-    )
+    role = RoleSerializer()
     features = FeatureSerializer(many=True, read_only=True)
     profile = ProfileSerializer(required=False, allow_null=True)
 
@@ -18,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ['id', 'email', 'name', 'password', 'cpf', 'role', 'features', 'profile']
         extra_kwargs = {
-            'senha': {'write_only': True},
+            'password': {'write_only': True},
         }
        
     def __init__(self, *args, **kwargs):
@@ -27,13 +24,43 @@ class UserSerializer(serializers.ModelSerializer):
             self.fields.pop('password')
         if self.context.get('remove_features'):
             self.fields.pop('features')
-        
+    
+    def to_internal_value(self, data):
+        """
+        Converte o role_id recebido para objeto Role na criação/atualização
+        """
+        if 'role' in data and isinstance(data['role'], (str, int)):
+            try:
+                role_id = data['role']
+                data = data.copy()
+                data['role'] = {'id': role_id}
+            except Role.DoesNotExist:
+                raise serializers.ValidationError({'role': 'Role inválida'})
+        return super().to_internal_value(data)
+
     def create(self, validated_data):
-        roles_data = validated_data.pop('role')
+        role_data = validated_data.pop('role')
+        role = Role.objects.get(id=role_data['id'])
+        
         user = User.objects.create(**validated_data)
-        user.role = roles_data
-        user.features.set(roles_data.features.all())
+        user.role = role
+        user.features.set(role.features.all())
+        user.save()
+        
         return user
+
+    def update(self, instance, validated_data):
+        if 'role' in validated_data:
+            role_data = validated_data.pop('role')
+            role = Role.objects.get(id=role_data['id'])
+            instance.role = role
+            instance.features.set(role.features.all())
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
 
 class SimpleUserSerializer(serializers.ModelSerializer):
     cpf = serializers.SerializerMethodField()

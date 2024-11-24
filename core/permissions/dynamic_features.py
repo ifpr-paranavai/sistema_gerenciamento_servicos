@@ -13,6 +13,7 @@ class ModelFeatureGenerator:
         ('update_user_profile_userviewset', 'Atualizar perfil do usuário'),
         ('documents.download_document', 'Realizar download de documentos'),
         ('documents.preview_document', 'Visualizar preview de documentos'),
+        ('appointment.update_status_appointment', 'Atualizar status de agendamento'),
     ]
     
     def __init__(self):
