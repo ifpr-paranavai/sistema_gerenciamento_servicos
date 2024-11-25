@@ -108,7 +108,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    # 'authentication.permissions.middleware.PermissionMiddleware',
 ]
 
 LANGUAGE_CODE = 'pt-br'
@@ -154,6 +153,9 @@ DATABASES = {
         'PASSWORD': os.getenv('DATABASE_PASSWORD'),
         'HOST': os.getenv('DATABASE_HOST'),
         'PORT': os.getenv('DATABASE_PORT'),
+        'TEST': {
+            'NAME': f'test_{os.getenv("DATABASE_NAME")}',
+        },
     }
 }
 

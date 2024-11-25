@@ -33,6 +33,18 @@
             "django": true,
             "program": "${workspaceFolder}/manage.py",
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Depurador do Python: Test",
+            "type": "python",
+            "request": "launch",
+            "args": [
+                "test",
+                "appointment"
+            ],
+            "django": true,
+            "program": "${workspaceFolder}/manage.py",
+            "console": "integratedTerminal"
         }
     ]
 }

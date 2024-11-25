@@ -1,45 +1,45 @@
 from django.test import TestCase
 from django.urls import reverse
 from model_bakery import baker
-from django.contrib.auth import get_user_model
-from core.models import Role, Feature
-from authentication.models import UserRole
+from rest_framework import status
+from rest_framework.test import APIClient
+from core.models.feature import Feature
+from core.models.role import Role
+from authentication.models import User
 
-User = get_user_model()
 
-class PermissionTests(TestCase):
+class DynamicPermissionTests(TestCase):
 
     def setUp(self):
-        # Criando as permissões e roles usando baker
-        self.view_reports_permission = baker.make(Feature, name='pode_ver_relatorios')
-        self.edit_users_permission = baker.make(Feature, name='pode_editar_usuarios')
-        self.admin_role = baker.make(Role, name='Administrador')
-        self.user_role = baker.make(Role, name='Usuário')
+        self.client = APIClient()
+        self.url = reverse('document-list')
 
-        # Associando permissões às roles
-        self.admin_role.features.add(self.view_reports_permission, self.edit_users_permission)
-        self.user_role.features.add(self.view_reports_permission)
+        self.feature, _ = Feature.objects.get_or_create(
+            name='documents.list_document',
+            defaults={'description': 'Permissão para listar documentos'}
+        )
 
-        # Criando usuários com baker
-        self.admin_user = baker.make(User)
-        self.regular_user = baker.make(User)
-        self.no_permission_user = baker.make(User)
+        self.role = baker.make(Role, role_type='provider')
+        self.role.features.add(self.feature)
 
-        # Associando roles aos usuários
-        baker.make(UserRole, user=self.admin_user, role=self.admin_role)
-        baker.make(UserRole, user=self.regular_user, role=self.user_role)
+        self.user = baker.make(User, role=self.role)
+        self.client.force_authenticate(user=self.user)
 
-    def test_admin_access(self):
-        self.client.login(username=self.admin_user.username, password='123456')
-        response = self.client.get(reverse('protected_view'), {'required_permission': 'pode_ver_relatorios'})
-        self.assertEqual(response.status_code, 200)  # Admin deve ter acesso
+    def test_user_has_permission(self):
 
-    def test_user_access(self):
-        self.client.login(username=self.regular_user.username, password='123456')
-        response = self.client.get(reverse('protected_view'), {'required_permission': 'pode_ver_relatorios'})
-        self.assertEqual(response.status_code, 200)  # Usuário deve ter acesso
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            "Usuário com permissão não conseguiu acessar a URL"
+        )
 
-    def test_no_permission_access(self):
-        self.client.login(username=self.no_permission_user.username, password='123456')
-        response = self.client.get(reverse('protected_view'), {'required_permission': 'pode_ver_relatorios'})
-        self.assertEqual(response.status_code, 403)  # Usuário sem permissão deve ser negado
+    def test_user_has_no_permission(self):
+
+        self.role.features.clear()
+        response = self.client.get(self.url)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_403_FORBIDDEN,
+            "Usuário sem permissão conseguiu acessar a URL"
+        )

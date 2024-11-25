@@ -55,24 +55,6 @@ class DocumentViewSet(DynamicPermissionModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    @action(detail=True, methods=['get'])
-    def download(self, request, pk=None):
-        try:
-            document = self.get_object()
-            response = HttpResponse(
-                document.file_content,
-                content_type=f'application/{document.file_type}'
-            )
-            response['Content-Disposition'] = f'attachment; filename="{document.file_name}"'
-            return response
-        except Exception as e:
-            return Response(
-                {'error': str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-    @action(detail=True, methods=['get'])
-    def preview(self, request, pk=None):
         try:
             document = self.get_object()
             return Response({
