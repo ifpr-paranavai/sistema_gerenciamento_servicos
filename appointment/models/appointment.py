@@ -26,6 +26,9 @@ class Appointment(TimeStampedModel):
     documents = models.ManyToManyField(Document, related_name='appointments')
     observation = models.TextField(blank=True, null=True)
 
+    class Meta:
+        ordering = ['-created_at'] 
+
     def __str__(self):
         return f"Appointment {self.id} for {self.client.name} with {self.provider.name}"
 
