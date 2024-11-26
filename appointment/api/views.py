@@ -18,7 +18,7 @@ class AppointmentViewSet(DynamicPermissionModelViewSet):
             appointment = self.get_object()
             new_status = request.data.get('status')
             
-            if request.user.role.name != 'provider' or appointment.provider != request.user:
+            if request.user.role.role_type != 'provider' or appointment.provider != request.user:
                 return Response(
                     {'error': 'Você não tem permissão para alterar este agendamento'},
                     status=status.HTTP_403_FORBIDDEN
