@@ -5,9 +5,9 @@ from authentication.models import User
 from core.api.serializers import FeatureSerializer, RoleSerializer
 from core.models.role import Role
 from core.api.serializers import ProfileSerializer
-        
+
 class UserSerializer(serializers.ModelSerializer):
-    role = RoleSerializer()
+    role = serializers.PrimaryKeyRelatedField(queryset=Role.objects.all())
     features = FeatureSerializer(many=True, read_only=True)
     profile = ProfileSerializer(required=False, allow_null=True)
 
@@ -24,35 +24,26 @@ class UserSerializer(serializers.ModelSerializer):
             self.fields.pop('password')
         if self.context.get('remove_features'):
             self.fields.pop('features')
-    
-    def to_internal_value(self, data):
+
+    def to_representation(self, instance):
         """
-        Converte o role_id recebido para objeto Role na criação/atualização
+        Override to return the complete role object in GET responses
         """
-        if 'role' in data and isinstance(data['role'], (str, int)):
-            try:
-                role_id = data['role']
-                data = data.copy()
-                data['role'] = {'id': role_id}
-            except Role.DoesNotExist:
-                raise serializers.ValidationError({'role': 'Role inválida'})
-        return super().to_internal_value(data)
+        ret = super().to_representation(instance)
+        ret['role'] = RoleSerializer(instance.role).data
+        return ret
 
     def create(self, validated_data):
-        role_data = validated_data.pop('role')
-        role = Role.objects.get(id=role_data['id'])
-        
+        role = validated_data.pop('role')  # role is already a Role instance due to PrimaryKeyRelatedField
         user = User.objects.create(**validated_data)
         user.role = role
         user.features.set(role.features.all())
         user.save()
-        
         return user
 
     def update(self, instance, validated_data):
         if 'role' in validated_data:
-            role_data = validated_data.pop('role')
-            role = Role.objects.get(id=role_data['id'])
+            role = validated_data.pop('role')  # role is already a Role instance
             instance.role = role
             instance.features.set(role.features.all())
         
