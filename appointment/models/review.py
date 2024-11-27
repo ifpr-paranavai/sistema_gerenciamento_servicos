@@ -10,7 +10,7 @@ class Review(TimeStampedModel):
     rating = models.IntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
-    comment = models.TextField()
+    comment = models.TextField(blank=True)
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='reviews')
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
