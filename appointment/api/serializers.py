@@ -24,13 +24,14 @@ class AppointmentSerializer(serializers.ModelSerializer):
         queryset=Service.objects.all()
     )
     rating = serializers.SerializerMethodField()
+    review = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointment
         fields = [
             'id', 'appointment_date', 'status', 'client', 'provider', 
             'services', 'service_ids', 'is_completed', 'documents', 
-            'document_file', 'rating', 'observation'
+            'document_file', 'rating', 'observation', 'review'
         ]
         read_only_fields = ['is_completed', 'rating']
 
@@ -266,6 +267,12 @@ class AppointmentSerializer(serializers.ModelSerializer):
             for doc in documents_created:
                 doc.delete()
             raise serializers.ValidationError(f"Erro ao processar documentos: {str(e)}")
+        
+    def get_review(self, obj: Appointment) -> Dict:
+        # tem que trazer o review do user logado
+        user = self.context.get('request').user
+        review = obj.reviews.filter(user=user).first()
+        return ReviewSerializer(review).data if review else None
         
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
