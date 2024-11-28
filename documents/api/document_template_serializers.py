@@ -20,11 +20,28 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
         if hasattr(data, 'dict'):
             data = data.dict()
 
+        # Tratamento do file
         if 'file' in data:
             if not data['file'] or data['file'] == 'null' or data['file'] == '':
                 data.pop('file')
 
-        return super().to_internal_value(data)
+        # Garantir que file_types seja mantido
+        if 'file_types' in data:
+            initial_data = data['file_types']
+            try:
+                # Se já é uma string JSON válida, mantém como está
+                if isinstance(initial_data, str):
+                    json.loads(initial_data)  # Valida se é JSON válido
+                    data['file_types'] = initial_data
+                else:
+                    # Se não for string, converte para JSON
+                    data['file_types'] = json.dumps(initial_data)
+            except json.JSONDecodeError:
+                # Se não for JSON válido, mantém o valor original para ser validado depois
+                data['file_types'] = initial_data
+
+        result = super().to_internal_value(data)
+        return result
 
     def validate_file_types(self, value):
         """Valida e normaliza file_types"""
@@ -40,24 +57,6 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
             pass
         
         raise serializers.ValidationError("Formato inválido para file_types")
-
-    def validate(self, attrs):
-        file = attrs.get('file', None)
-        if file and hasattr(file, 'name'):
-            file_extension = file.name.split('.')[-1].lower()
-            try:
-                allowed_extensions = json.loads(attrs['file_types'])
-                if file_extension not in allowed_extensions:
-                    raise serializers.ValidationError({
-                        'file': f'Tipo de arquivo não permitido. Tipos permitidos: {allowed_extensions}'
-                    })
-            except json.JSONDecodeError:
-                raise serializers.ValidationError({
-                    'file_types': 'Formato inválido'
-                })
-
-        return attrs
-
 
     def create(self, validated_data):
         file = validated_data.pop('file', None)
