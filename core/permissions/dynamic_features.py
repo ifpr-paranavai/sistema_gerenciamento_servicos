@@ -17,6 +17,7 @@ class ModelFeatureGenerator:
         ('create_or_get_chat_chatmessageview', 'Create or get Chat'),
         ('send_message_chatmessageview', 'Send Message'),
         ('list_messages_chatmessageview', 'List Messages'),
+        ('list_user_chats_chatmessageview', 'List Messages'),
     ]
     
     def __init__(self):
