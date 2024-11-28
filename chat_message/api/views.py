@@ -30,7 +30,7 @@ class ChatMessageView(DynamicPermissionModelViewSet):
 
         return Response({
             "chat_id": chat.id,
-            "participants": [user.username for user in chat.participants.all()],
+            "participants": [chat.participants.all()],
         })
 
 
@@ -42,7 +42,7 @@ class ChatMessageView(DynamicPermissionModelViewSet):
             return Response({"error": "Você não faz parte deste chat."}, status=403)
 
         messages = chat.messages.order_by("timestamp").values(
-            "id", "sender__username", "content", "timestamp"
+            "id", "sender__name", "content", "timestamp"
         )
 
         return Response({"messages": list(messages)})
