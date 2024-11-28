@@ -1,0 +1,72 @@
+from django.shortcuts import get_object_or_404
+from chat_message.models import Chat, Message
+from core.models.mixins import DynamicPermissionModelViewSet
+from authentication.api.serializers import SimpleUserSerializer
+from core.models.mixins import DynamicViewPermissions
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from django.contrib.auth.models import User
+
+
+class ChatMessageView(DynamicPermissionModelViewSet):
+    permission_classes = [DynamicViewPermissions]
+    serializer_class = SimpleUserSerializer
+    
+    @action(detail=False, methods=["post"])
+    def create_or_get_chat(self, request):
+        user_sender = request.user
+        user_receiver_id = request.data.get("user_receiver_id")
+
+        if not user_receiver_id:
+            return Response({"error": "user_id é obrigatório."}, status=400)
+
+        user_receiver = get_object_or_404(User, id=user_receiver_id)
+
+        chat = Chat.objects.filter(participants=user_sender).filter(
+            participants=user_receiver).first()
+        if not chat:
+            chat = Chat.objects.create()
+            chat.participants.add(user_sender, user_receiver)
+
+        return Response({
+            "chat_id": chat.id,
+            "participants": [user.username for user in chat.participants.all()],
+        })
+
+
+    @action(detail=True, methods=["get"])
+    def list_messages(self, request, chat_id):
+        chat = get_object_or_404(Chat, id=chat_id)
+
+        if request.user not in chat.participants.all():
+            return Response({"error": "Você não faz parte deste chat."}, status=403)
+
+        messages = chat.messages.order_by("timestamp").values(
+            "id", "sender__username", "content", "timestamp"
+        )
+
+        return Response({"messages": list(messages)})
+
+
+    @action(detail=False, methods=["post"])
+    def send_message(self, request):
+        chat_id = request.data.get("chat_id")
+        content = request.data.get("content")
+
+        if not chat_id or not content:
+            return Response({"error": "chat_id e content são obrigatórios."}, status=400)
+
+        chat = get_object_or_404(Chat, id=chat_id)
+        sender = request.user
+
+        if sender not in chat.participants.all():
+            return Response({"error": "Você não faz parte deste chat."}, status=403)
+
+        message = Message.objects.create(
+            chat=chat, sender=sender, content=content)
+
+        return Response({
+            "message_id": message.id,
+            "content": message.content,
+            "timestamp": message.timestamp,
+        })

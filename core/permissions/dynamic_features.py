@@ -14,6 +14,9 @@ class ModelFeatureGenerator:
         ('documents.download_document', 'Realizar download de documentos'),
         ('documents.preview_document', 'Visualizar preview de documentos'),
         ('appointment.update_status_appointment', 'Atualizar status de agendamento'),
+        ('create_or_get_chat_chatmessageview', 'Create or get Chat'),
+        ('send_message_chatmessageview', 'Send Message'),
+        ('list_messages_chatmessageview', 'List Messages'),
     ]
     
     def __init__(self):

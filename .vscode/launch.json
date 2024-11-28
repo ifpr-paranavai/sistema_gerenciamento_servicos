@@ -3,7 +3,7 @@
     "configurations": [
         {
             "name": "Depurador do Python: Django",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "args": [
                 "runserver",
@@ -14,7 +14,7 @@
         },
         {
             "name": "Depurador do Python: Migrate",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "args": [
                 "migrate"
@@ -25,7 +25,7 @@
         },
         {
             "name": "Depurador do Python: Makemigrations",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "args": [
                 "makemigrations"
@@ -36,7 +36,7 @@
         },
         {
             "name": "Depurador do Python: Test",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "args": [
                 "test",

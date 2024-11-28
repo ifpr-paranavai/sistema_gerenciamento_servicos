@@ -1,7 +1,4 @@
-from argparse import Action
-
 from rest_framework import status
-from rest_framework.decorators import action
 from rest_framework.response import Response
 from core.models.mixins import DynamicPermissionModelViewSet
 from documents.models.document import Document
@@ -54,16 +51,4 @@ class DocumentViewSet(DynamicPermissionModelViewSet):
                 {'error': str(e)}, 
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        try:
-            document = self.get_object()
-            return Response({
-                'file_name': document.file_name,
-                'file_type': document.file_type,
-                'content': base64.b64encode(document.file_content).decode('utf-8')
-            })
-        except Exception as e:
-            return Response(
-                {'error': str(e)}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            
