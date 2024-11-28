@@ -12,6 +12,23 @@ class ChatMessageView(DynamicPermissionModelViewSet):
     permission_classes = [DynamicViewPermissions]
     serializer_class = SimpleUserSerializer
     
+    @action(detail=False, methods=["get"])
+    def list_user_chats(self, request):
+        user = request.user
+        chats = Chat.objects.filter(participants=user)
+
+        chat_data = [
+            {
+                "chat_id": chat.id,
+                "participants": [participant.name for participant in chat.participants.all()],
+                "created_at": chat.created_at,
+            }
+            for chat in chats
+        ]
+
+        return Response(chat_data)
+        
+    
     @action(detail=False, methods=["post"])
     def create_or_get_chat(self, request):
         user_sender = request.user
