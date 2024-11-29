@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404
+from authentication.models.user import User
+from chat_message.api.serializers import ChatUserSerializer
 from chat_message.models import Chat, Message
 from core.models.mixins import DynamicPermissionModelViewSet
 from authentication.api.serializers import SimpleUserSerializer
 from core.models.mixins import DynamicViewPermissions
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from django.contrib.auth.models import User
+
 
 
 class ChatMessageView(DynamicPermissionModelViewSet):
@@ -20,7 +22,7 @@ class ChatMessageView(DynamicPermissionModelViewSet):
         chat_data = [
             {
                 "chat_id": chat.id,
-                "participants": [participant.name for participant in chat.participants.all()],
+                "participants": ChatUserSerializer(chat.participants.all(), many=True).data,
                 "created_at": chat.created_at,
             }
             for chat in chats
@@ -29,10 +31,10 @@ class ChatMessageView(DynamicPermissionModelViewSet):
         return Response(chat_data)
         
     
-    @action(detail=False, methods=["post"])
-    def create_or_get_chat(self, request):
+    @action(detail=True, methods=["post"])
+    def create_or_get_chat(self, request, pk=None):
         user_sender = request.user
-        user_receiver_id = request.data.get("user_receiver_id")
+        user_receiver_id = pk
 
         if not user_receiver_id:
             return Response({"error": "user_id é obrigatório."}, status=400)
@@ -52,8 +54,8 @@ class ChatMessageView(DynamicPermissionModelViewSet):
 
 
     @action(detail=True, methods=["get"])
-    def list_messages(self, request, chat_id):
-        chat = get_object_or_404(Chat, id=chat_id)
+    def list_messages(self, request, pk=None):
+        chat = get_object_or_404(Chat, id=pk)
 
         if request.user not in chat.participants.all():
             return Response({"error": "Você não faz parte deste chat."}, status=403)
