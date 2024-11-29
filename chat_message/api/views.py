@@ -49,7 +49,7 @@ class ChatMessageView(DynamicPermissionModelViewSet):
 
         return Response({
             "chat_id": chat.id,
-            "participants": [chat.participants.all()],
+            "participants": ChatUserSerializer(chat.participants.all(), many=True).data,
         })
 
 
