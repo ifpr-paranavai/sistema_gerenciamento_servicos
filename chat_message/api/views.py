@@ -16,7 +16,7 @@ class ChatMessageView(DynamicPermissionModelViewSet):
     
     @action(detail=False, methods=["get"])
     def list_user_chats(self, request):
-        user = request.user 
+        user = request.user
         chats = Chat.objects.filter(participants=user)
 
         chat_data = []
@@ -41,9 +41,12 @@ class ChatMessageView(DynamicPermissionModelViewSet):
                         "timestamp": message.timestamp,
                     })
 
+            participants = chat.participants.exclude(id=user.id)
+            serialized_participants = ChatUserSerializer(participants, many=True).data
+
             chat_data.append({
                 "chat_id": chat.id,
-                "participants": ChatUserSerializer(chat.participants.all(), many=True).data,
+                "participants": serialized_participants,
                 "created_at": chat.created_at,
                 "my_messages": my_messages,
                 "other_messages": other_messages,
