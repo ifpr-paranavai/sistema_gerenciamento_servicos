@@ -2,6 +2,8 @@ from django.db import models
 import uuid
 from django.db.models import Q
 from datetime import datetime, timedelta
+
+from django.forms import ValidationError
 from authentication.models import User
 from documents.models.document import Document
 from service.models import Service
@@ -19,8 +21,8 @@ class Appointment(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     appointment_date = models.DateTimeField()
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
-    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_appointments')
-    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='provider_appointments')
+    client = models.ForeignKey(User, on_delete=models.PROTECT, related_name='client_appointments')
+    provider = models.ForeignKey(User, on_delete=models.PROTECT, related_name='provider_appointments')
     services = models.ManyToManyField(Service, related_name='appointments')
     is_completed = models.BooleanField(default=False)
     documents = models.ManyToManyField(Document, related_name='appointments')
@@ -33,6 +35,8 @@ class Appointment(TimeStampedModel):
         return f"Appointment {self.id} for {self.client.name} with {self.provider.name}"
 
     def delete(self, using=None, keep_parents=False):
+        if self.status != self.Status.PENDING:
+            raise ValidationError("Este agendamento não pode ser excluído pois já foi confirmado.")
         return super().delete()
     
     @classmethod

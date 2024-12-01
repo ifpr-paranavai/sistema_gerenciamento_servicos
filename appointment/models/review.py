@@ -11,8 +11,8 @@ class Review(TimeStampedModel):
         validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     comment = models.TextField(blank=True)
-    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, related_name='reviews')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    appointment = models.ForeignKey(Appointment, on_delete=models.PROTECT, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
         return f'Review for {self.appointment.id} by {self.user.name}'

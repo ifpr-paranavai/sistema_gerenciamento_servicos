@@ -1,9 +1,6 @@
 from core.models.mixins import DynamicPermissionModelViewSet
 from documents.api.document_template_serializers import DocumentTemplateSerializer, ServiceDocumentRequirementSerializer
 from documents.models.document_template import DocumentTemplate, ServiceDocumentRequirement
-
-
-# documents/api/document_template_view.py
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -34,11 +31,6 @@ class DocumentTemplateViewSet(DynamicPermissionModelViewSet):
         serializer.is_valid(raise_exception=True)
         template = serializer.save()
         return Response(serializer.data)
-
-    def perform_destroy(self, instance):
-        if instance.document:
-            instance.document.delete()  # Isso usará o soft delete do TimeStampedModel
-        instance.delete()  # Soft delete do template
 
 class ServiceDocumentRequirementViewSet(DynamicPermissionModelViewSet):
     queryset = ServiceDocumentRequirement.objects.all()
