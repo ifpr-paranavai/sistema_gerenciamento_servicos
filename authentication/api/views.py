@@ -13,6 +13,11 @@ from authentication.models import User
 from core.models.mixins import DynamicViewPermissions
 from core.models.role import Role
 
+from django.utils.crypto import get_random_string
+from django.core.mail import send_mail
+from django.urls import reverse
+from django.conf import settings
+
 class UserViewSet(ViewSet):
     permission_classes = [DynamicViewPermissions]
     serializer_class = SimpleUserSerializer
@@ -76,7 +81,6 @@ class UserViewSet(ViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
     
-    
 class AuthenticationView(ViewSet):
 
     def list(self, request, *args, **kwargs):
@@ -125,6 +129,49 @@ class AuthenticationView(ViewSet):
         else:
             return Response({'error': 'Credenciais inválidas!'}, status=status.HTTP_401_UNAUTHORIZED)
 
+    
+    @action(detail=False, methods=['post'], url_path='reset-password-request')
+    def reset_password_request(self, request):
+        email = request.data.get('email')
+        try:
+            user = User.objects.get(email=email)
+            token = get_random_string(length=32)  # Crie um token único
+            reset_url = request.build_absolute_uri(reverse('reset-password-confirm', kwargs={'token': token}))
+            
+            user.password_reset_token = token
+            user.save()
+            
+            send_mail(
+                'Redefinição de Senha',
+                f'Você recebeu este e-mail porque solicitou a redefinição da sua senha. Clique no link para redefinir sua senha: {reset_url}',
+                settings.EMAIL_HOST_USER,
+                [user.email],
+                fail_silently=False,
+            )
+
+            return Response({'message': 'E-mail de redefinição de senha enviado.'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=False, methods=['post'], url_path='reset-password-confirm/(?P<token>[^/.]+)')
+    def reset_password_confirm(self, request, token=None):
+        new_password = request.data.get('new_password')
+        try:
+            # Aqui você deve validar o token contra o que você armazenou anteriormente
+            # Se o token for válido, continue. Caso contrário, retorne um erro.
+
+            user = User.objects.get(
+                password_reset_token=token,    
+            )  # Obtenha o usuário de acordo com a lógica de validação do token
+            user.set_password(new_password)
+            user.save()
+
+            return Response({'message': 'Senha atualizada com sucesso.'}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'detail': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
