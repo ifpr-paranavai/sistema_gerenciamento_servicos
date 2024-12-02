@@ -80,16 +80,31 @@ class ChatMessageView(DynamicPermissionModelViewSet):
 
     @action(detail=True, methods=["get"])
     def list_messages(self, request, pk=None):
-        chat = get_object_or_404(Chat, id=pk)
+        user = request.user
+        messages = Message.objects.filter(chat__id=pk).order_by("timestamp")
 
-        if request.user not in chat.participants.all():
-            return Response({"error": "Você não faz parte deste chat."}, status=403)
+        my_messages = []
+        other_messages = []
 
-        messages = chat.messages.order_by("timestamp").values(
-            "id", "sender__name", "content", "timestamp"
-        )
+        for message in messages:
+            if message.sender == user:
+                my_messages.append({
+                    "id": message.id,
+                    "content": message.content,
+                    "timestamp": message.timestamp,
+                })
+            else:
+                other_messages.append({
+                    "id": message.id,
+                    "sender_name": message.sender.name,
+                    "content": message.content,
+                    "timestamp": message.timestamp,
+                })
 
-        return Response({"messages": list(messages)})
+        return Response({
+            "my_messages": my_messages,
+            "other_messages": other_messages,
+        })
 
 
     @action(detail=False, methods=["post"])
