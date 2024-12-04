@@ -164,6 +164,7 @@ class AuthenticationView(ViewSet):
                 password_reset_token=token,    
             )  # Obtenha o usuário de acordo com a lógica de validação do token
             user.set_password(new_password)
+            user.password_reset_token = None
             user.save()
 
             return Response({'message': 'Senha atualizada com sucesso.'}, status=status.HTTP_200_OK)
