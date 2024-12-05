@@ -137,7 +137,7 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
         
     def get_file_types(self, obj):
         try:
-            return json.loads(obj.file_types)
+            return obj.file_types.split(',')
         except json.JSONDecodeError:
             return []
 
