@@ -8,7 +8,7 @@ class DocumentService:
     def validate_file_type(file: UploadedFile, allowed_types: List[str]) -> None:
         extension = file.name.split('.')[-1].lower()
         if isinstance(allowed_types, str):
-            allowed_types = eval(allowed_types)
+            allowed_types = allowed_types.split(',')
             
         if extension not in allowed_types:
             raise serializers.ValidationError(
