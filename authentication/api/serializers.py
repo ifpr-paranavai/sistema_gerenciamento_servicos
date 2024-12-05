@@ -52,6 +52,23 @@ class UserSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+    
+    def validate_cpf(self, value):
+        if not self.is_valid_cpf(value):
+            raise serializers.ValidationError("CPF inválido.")
+        return value
+    
+    def is_valid_cpf(self, cpf):
+        cpf = ''.join(filter(str.isdigit, cpf))
+        if len(cpf) != 11 or len(set(cpf)) == 1:
+            return False
+        
+        for i in range(9, 11):
+            value = sum(int(cpf[num]) * ((i + 1) - num) for num in range(0, i))
+            digit = ((value * 10) % 11) % 10
+            if digit != int(cpf[i]):
+                return False
+        return True
 
 class SimpleUserSerializer(serializers.ModelSerializer):
     cpf = serializers.SerializerMethodField()
