@@ -10,6 +10,7 @@ class ModelFeatureGenerator:
         ('list_dashboardstatsview', 'Listar estatísticas do dashboard'),
         ('clients_userviewset', 'Listar clientes do sistema'),
         ('providers_userviewset', 'Listar prestadores do sistema'),
+        ('users_userviewset', 'Listar usuários do sistema'),
         ('update_user_profile_userviewset', 'Atualizar perfil do usuário'),
         ('documents.download_document', 'Realizar download de documentos'),
         ('documents.preview_document', 'Visualizar preview de documentos'),
