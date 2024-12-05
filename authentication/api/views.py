@@ -27,6 +27,12 @@ class UserViewSet(ViewSet):
         users = User.objects.filter(role__role_type=Role.RoleType.PROVIDER)
         serializer = ProviderScheduleSerializer(users, many=True)
         return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def users(self, request):
+        users = User.objects.exclude(id=request.user.id)
+        serializer = self.serializer_class(users, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=['put'], url_path='update-user')
     def update_user_profile(self, request, pk=None):
