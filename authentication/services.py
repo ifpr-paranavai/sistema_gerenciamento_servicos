@@ -23,15 +23,17 @@ class UserService:
     """Serviço para manipulação de usuários."""
     @staticmethod
     def update_user(user, data):
-        profile_data = data.pop('profile', None)
-        for field, value in data.items():
-            setattr(user, field, value)
+        user.name = data['name']
+        user.email = data['email']
+        user.cpf = data['cpf']
+        user.profile.profile_picture = data['profile_picture']
+        user.profile.street = data['street']
+        user.profile.number = data['number']
+        user.profile.city = data['city']
+        user.profile.state = data['state']
+        user.profile.zip_code = data['zip_code']
         
-        if profile_data:
-            for field, value in profile_data.items():
-                setattr(user.profile, field, value)
-            user.profile.save()
-
+        user.profile.save()
         user.save()
         return user
 
