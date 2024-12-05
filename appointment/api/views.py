@@ -31,6 +31,7 @@ class AppointmentViewSet(DynamicPermissionModelViewSet):
                 )
 
             appointment.status = new_status
+            appointment.is_completed = appointment.status == Appointment.Status.COMPLETED
             appointment.save()
             
             serializer = self.get_serializer(appointment)
