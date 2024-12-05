@@ -89,6 +89,19 @@ class AuthenticationView(ViewSet):
         except User.DoesNotExist:
             return Response({'error': 'Invalid token'}, status=status.HTTP_404_NOT_FOUND)
 
+    
+    def list(self, request, *args, **kwargs):
+        content = {'message': 'List of items'}
+        return Response(content, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, pk=None):
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserSerializer(user, context={'remove_password': True, 'remove_features': True})
+        return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     pass
