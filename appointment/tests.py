@@ -190,7 +190,7 @@ class ReviewViewSetTests(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    def tearDown(self):
-        # Limpar banco de dados após cada teste
-        Appointment.objects.all().delete()
-        Review.objects.all().delete()
+    # def tearDown(self):
+    #     # Limpar banco de dados após cada teste
+    #     Appointment.objects.all().delete()
+    #     Review.objects.all().delete()

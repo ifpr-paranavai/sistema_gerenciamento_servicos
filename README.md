@@ -51,3 +51,6 @@ de ambiente.
 
 # Relacionar as permissões
   `python manage.py assign_permissions`
+
+# rodar testes com vizualização de cobertura
+coverage run manage.py test
