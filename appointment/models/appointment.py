@@ -27,6 +27,11 @@ class Appointment(TimeStampedModel):
     is_completed = models.BooleanField(default=False)
     documents = models.ManyToManyField(Document, related_name='appointments')
     observation = models.TextField(blank=True, null=True)
+    extra_documents = models.ManyToManyField(
+        Document, 
+        related_name='extra_appointments',
+        blank=True
+    )
 
     class Meta:
         ordering = ['-created_at'] 
