@@ -2,7 +2,6 @@ from django.shortcuts import get_object_or_404
 from authentication.models.user import User
 from chat_message.api.serializers import ChatUserSerializer
 from chat_message.models import Chat, Message
-from chat_message.services import MessageService
 from core.models.mixins import DynamicPermissionModelViewSet
 from authentication.api.serializers import SimpleUserSerializer
 from core.models.mixins import DynamicViewPermissions
@@ -130,13 +129,3 @@ class ChatMessageView(DynamicPermissionModelViewSet):
             "content": message.content,
             "timestamp": message.timestamp,
         })
-    
-    @action(detail=False, methods=['get'])
-    def unread_count(self, request):
-        count = MessageService.get_unread_messages_count(request.user.id)
-        return Response({'count': count})
-
-    @action(detail=True, methods=['post'])
-    def mark_as_read(self, request, pk=None):
-        MessageService.mark_messages_as_read(pk, request.user.id)
-        return Response({'message': 'Messages marked as read.'})

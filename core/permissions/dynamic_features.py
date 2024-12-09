@@ -19,8 +19,6 @@ class ModelFeatureGenerator:
         ('send_message_chatmessageview', 'Send Message'),
         ('list_messages_chatmessageview', 'List Messages'),
         ('list_user_chats_chatmessageview', 'List Messages'),
-        ('unread_count_chatmessageview', 'Unread Count'),
-        ('mark_as_read_chatmessageview', 'Mark as Read'),
     ]
     
     def __init__(self):

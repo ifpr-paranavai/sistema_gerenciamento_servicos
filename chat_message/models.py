@@ -17,7 +17,6 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.PROTECT)
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
-    vizualized = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Message from {self.sender.name} at {self.timestamp}"
