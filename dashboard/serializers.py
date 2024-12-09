@@ -9,7 +9,7 @@ class ServiceStatSerializer(serializers.Serializer):
     quantity = serializers.IntegerField()
     averageValue = serializers.DecimalField(max_digits=10, decimal_places=2)
 
-class AppointmentSerializer(serializers.ModelSerializer):
+class AppointmentSerializerDashboard(serializers.ModelSerializer):
     serviceName = serializers.SerializerMethodField()
     clientName = serializers.SerializerMethodField()
     providerName = serializers.SerializerMethodField()
@@ -30,5 +30,5 @@ class AppointmentSerializer(serializers.ModelSerializer):
 class DashboardStatSerializer(serializers.Serializer):
     totalRevenue = serializers.DecimalField(max_digits=10, decimal_places=2)
     serviceStats = ServiceStatSerializer(many=True)
-    currentAppointments = AppointmentSerializer(many=True)
-    upcomingAppointments = AppointmentSerializer(many=True)
+    currentAppointments = AppointmentSerializerDashboard(many=True)
+    upcomingAppointments = AppointmentSerializerDashboard(many=True)
