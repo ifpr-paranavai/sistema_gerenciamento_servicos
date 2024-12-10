@@ -1,3 +1,4 @@
+import os
 from django.core.mail import send_mail
 from django.urls import reverse
 from django.utils.crypto import get_random_string
@@ -9,7 +10,8 @@ class EmailService:
     """Serviço para envio de e-mails."""
     @staticmethod
     def send_reset_password_email(user, token, request):
-        reset_url = request.build_absolute_uri(reverse('reset-password-confirm', kwargs={'token': token}))
+        # reset_url = request.build_absolute_uri(reverse('reset-password-confirm', kwargs={'token': token}))
+        reset_url = f'http://localhost:4200/reset-password?token={token}'
         send_mail(
             subject='Redefinição de Senha',
             message=f'Clique no link para redefinir sua senha: {reset_url}',
