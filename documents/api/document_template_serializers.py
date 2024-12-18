@@ -9,10 +9,11 @@ class DocumentTemplateSerializer(serializers.ModelSerializer):
     file = serializers.FileField(write_only=True, required=False, allow_null=True, allow_empty_file=True)
     document = serializers.SerializerMethodField()
     file_types = serializers.SerializerMethodField()
+    file_types_write = serializers.CharField(write_only=True, required=False, source='file_types')
 
     class Meta:
         model = DocumentTemplate
-        fields = ['id', 'name', 'description', 'file_types', 
+        fields = ['id', 'name', 'description', 'file_types', 'file_types_write',
                  'document', 'file', 'created_at', 'updated_at']
         read_only_fields = ['document', 'created_at', 'updated_at']
     

@@ -1,3 +1,4 @@
+import json
 from core.models.mixins import DynamicPermissionModelViewSet
 from documents.api.document_template_serializers import DocumentTemplateSerializer, ServiceDocumentRequirementSerializer
 from documents.models.document_template import DocumentTemplate, ServiceDocumentRequirement
@@ -27,10 +28,34 @@ class DocumentTemplateViewSet(DynamicPermissionModelViewSet):
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        data = self._format_data(request.data)
+        serializer = self.get_serializer(instance, data=data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        template = serializer.save()
-        return Response(serializer.data)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, 
+            headers=headers
+        )
+    
+    def _format_data(self, data):
+        """Helper method to format request data"""
+        formatted_data = data.copy()
+        
+        # Format file_types
+        if 'file_types' in formatted_data:
+            file_types = formatted_data.getlist('file_types')[0]  # Pega o primeiro item da lista
+            try:
+                # Converte string JSON para lista Python
+                file_types_list = json.loads(file_types)
+                # Converte lista Python para string com elementos separados por vírgula
+                formatted_data['file_types_write'] = ','.join(file_types_list)
+                # Remove o campo original file_types
+                del formatted_data['file_types']
+            except json.JSONDecodeError:
+                pass
+                
+        return formatted_data
 
 class ServiceDocumentRequirementViewSet(DynamicPermissionModelViewSet):
     queryset = ServiceDocumentRequirement.objects.all()
